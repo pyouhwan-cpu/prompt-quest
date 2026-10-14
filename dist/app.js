@@ -72,7 +72,7 @@ function renderLab(){
 
     </div><details class="panel optional"><summary>이 명단은 어떤 자료인가요?</summary><p>학습용으로 만든 ${current===2?'이동 기록 360건':'360명의 가상 '+b.noun+' 기록'}이에요. 실제 역사·고객·이동 자료는 아니에요.</p><p>${m.columns}</p></details></div>
     <div><div class="panel"><div class="guide-label">함께 살펴볼 기록</div><h2 id="result-title">${stage===0?'명단을 열면 여기에 보여요':'버튼을 눌러 함께 확인해요'}</h2><div class="output" id="output"><div class="empty"><div><span>✧</span>${stage===0?'처음에는 표를 구경하는 것만으로 충분해요.':'복잡한 계산은 컴퓨터가 도와줄 거예요.'}</div></div></div><div id="quiz"></div></div>
-</div></div></section><p class="game-footnote">대화와 선택지를 따라 진행하는 학습 게임이에요. 기록 분석은 이 브라우저에서 계산해요.</p>`;
+</div></div></section><p class="game-footnote">대화와 선택지를 따라 진행하는 학습 게임이에요. 고정된 기록을 미리 분석한 결과로 진행하는 체험이에요.</p>`;
   $('#back').onclick=map;
   showCodePreview();
   $('#guided-run').onclick=run;
@@ -82,16 +82,15 @@ function renderLab(){
 }
 function finishResult(result){clearTimeout(timer);lock(false);results[current][stage]=result;history.push({mission:current,stage,prompt:beginner[current].actions[stage],date:new Date().toISOString(),metrics:result.metrics||null});history=history.slice(-60);renderResult(result);persist();}
 function run(){
-  if(busy)return;const config=configs[current];
-  lock(true);$('#feedback').className='';$('#feedback').textContent='명단을 준비하고 있어요…';
-  if(stage===0){
-    fetch(`intro-${current}.json`,{signal:AbortSignal.timeout(15000)}).then(response=>{if(!response.ok)throw Error('명단 파일을 열지 못했어요.');return response.json();}).then(finishResult).catch(error=>fail(error.message));return;
-  }
-  try{
-    if(!worker){worker=new Worker('worker.js?v=10',{type:'module'});worker.onmessage=({data})=>{if(data.status){$('#feedback').textContent=data.status;return;}if(data.error){fail(data.error);return;}finishResult(data.result);};worker.onerror=event=>fail(event.message||'계산 도구를 준비하지 못했어요.');}
-    worker.postMessage({mission:current,stage,...config});timer=setTimeout(()=>fail('계산 도구를 준비하는 시간이 너무 오래 걸리고 있어요.'),180000);
-  }catch(error){fail(error.message);}
+  if(busy)return;
+  lock(true);$('#feedback').className='';$('#feedback').textContent='탐험 기록을 펼치고 있어요…';
+  const path=stage===0?`intro-${current}.json`:`results/${current}-${stage}.json?v=11`;
+  fetch(path,{signal:AbortSignal.timeout(15000)}).then(response=>{
+    if(!response.ok)throw Error('탐험 기록 파일을 열지 못했어요.');
+    return response.json();
+  }).then(finishResult).catch(error=>fail(error.message));
 }
+
 function renderResult(r){
   const b=beginner[current];let html='';
   $('#result-title').textContent=['명단이 열렸어요!','빈칸을 채웠어요!','공부를 마쳤어요!','정답과 비교해봤어요!'][stage];
@@ -107,7 +106,7 @@ function renderResult(r){
     if(current<2){const correct=r.confusion[0][0]+r.confusion[1][1];html=`<div class="metric">${r.testCount}개 중 ${correct}개<small>처음 보는 기록에서 맞힌 개수</small></div><p>정답을 맞힌 비율은 <b>${(r.metrics.accuracy*100).toFixed(1)}%</b>예요.<br>이 비율을 <b>정확도</b>라고 불러요.</p>`;}else html=`<div class="metric">약 ${r.metrics.mae.toFixed(1)}분<small>예상 시간과 실제 시간이 평균적으로 어긋난 정도</small></div><p>일찍 예상했든 늦게 예상했든, 차이의 크기만 모아 평균을 냈어요. 이를 <b>평균 절대 오차(MAE)</b>라고 불러요.</p>`;
     html+=`<details class="optional"><summary>예상과 실제 기록을 비교해볼까요?</summary>${table(r.table)}<p>${current<2?'이 표에서 1은 생존 또는 VIP, 0은 사망 또는 일반 고객을 뜻해요.':'단위는 분이에요.'}</p><p>${current<2?`정밀도 ${(r.metrics.precision*100).toFixed(1)}% · 재현율 ${(r.metrics.recall*100).toFixed(1)}%`:`큰 차이에 더 민감한 지표인 RMSE는 ${r.metrics.rmse.toFixed(2)}분이에요.`}</p></details><p class="gentle-note">학습용으로 만든 기록에서 계산한 결과예요. 실제 상황에서도 같은 성능을 보장하지는 않아요.</p>`;
   }
-  $('#output').innerHTML=html;$('#quiz').innerHTML='';$('#code-panel').hidden=false;$('#code-context').textContent='방금 실행한 작업의 파이썬 코드예요. 읽거나 외우지 않아도 괜찮아요.';
+  $('#output').innerHTML=html;$('#quiz').innerHTML='';$('#code-panel').hidden=false;$('#code-context').textContent='이 결과를 미리 계산할 때 사용한 파이썬 코드예요. 읽거나 외우지 않아도 괜찮아요.';
   $('#code').textContent=r.code;$('#code-note').textContent=['head(5)는 처음 5명의 기록을 펼치는 명령이에요.','fillna는 비어 있는 칸을 채우는 명령이에요.','fit은 기록에서 규칙을 배우는 명령이에요.','predict는 배운 규칙으로 답을 예상하는 명령이에요.'][stage];
   $('#download-code').disabled=false;$('#download-data').disabled=false;
   $('#download-code').onclick=()=>download('quest.py',r.fullCode.replace('pd.read_csv(io.StringIO(csv_text))',`pd.read_csv('${r.filename}')`),'text/x-python');$('#download-data').onclick=()=>download(r.filename,r.csv,'text/csv');

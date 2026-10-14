@@ -25,7 +25,7 @@ const storyLessons=[
 function showBriefing(){
  const b=questBriefings[current];stopDialogue();closeSceneWindow();
  const cover=document.createElement('section');cover.className='story-briefing';cover.id='story-briefing';cover.setAttribute('aria-label','모험 시작 안내');
- cover.innerHTML=`<div class="briefing-card"><img src="assets/lumi-portrait.png" alt="여우 탐정 루미"><span class="guide-label">CHAPTER 0${current+1} · 오늘의 의뢰</span><h2>${b.title}</h2><p>${b.story}</p><p>${b.problem}</p><div class="briefing-goal"><b>당신의 역할 · ${b.role}</b><p>${b.goal}</p></div><p class="briefing-route">기록 펼치기 → 빈칸 정리 → 규칙 배우기 → 결과 확인</p><p>루미와 함께 ${b.first}</p><small>이야기는 창작이며 분석에는 학습용 가상 기록을 사용해요.</small><button class="primary" id="briefing-start">루미와 의뢰 시작하기 →</button></div>`;
+ cover.innerHTML=`<div class="briefing-card"><img src="assets/lumi-portrait.png" alt="여우 탐정 루미"><span class="guide-label">CHAPTER 0${current+1} · 오늘의 의뢰</span><h2>${b.title}</h2><p>${b.story}</p><p>${b.problem}</p><div class="briefing-goal"><b>당신의 역할 · ${b.role}</b><p>${b.goal}</p></div><p class="briefing-route">기록 펼치기 → 빈칸 정리 → 규칙 배우기 → 결과 확인</p><p>루미와 함께 ${b.first}</p><small>학습용 가상 기록을 미리 분석한 결과로 진행해요. 모델을 즉석에서 학습하지는 않아요.</small><button class="primary" id="briefing-start">루미와 의뢰 시작하기 →</button></div>`;
  $('.game-scene').append(cover);
  $('#briefing-start').onclick=()=>{briefingSeen[current]=true;cover.remove();startStageStory(false);$('#dialogue-next').focus();};
  $('#briefing-start').focus();
