@@ -293,3 +293,358 @@ body.playing{height:100dvh;overflow:hidden}.playing aside{height:56px;padding-le
 .story-briefing {
   z-index: 60 !important;
 }
+
+
+/* ========================================================
+   HIGH-END DETECTIVE INVESTIGATION BOARD (THE MASTER CLUE STAGE)
+   ======================================================== */
+
+.investigation-stage {
+  position: absolute;
+  inset: 50px 18px 160px 18px;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.clue-board {
+  pointer-events: auto;
+  width: min(880px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  background: linear-gradient(135deg, rgba(16, 26, 42, 0.97) 0%, rgba(8, 14, 24, 0.98) 100%);
+  border: 2px solid #e5c17d;
+  box-shadow: 0 0 35px rgba(0, 0, 0, 0.85), 0 0 20px rgba(229, 193, 125, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  padding: 20px 26px;
+  color: #f3efe6;
+  border-radius: 4px;
+  animation: boardAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes boardAppear {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.board-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid rgba(229, 193, 125, 0.35);
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+.board-header h2 {
+  font-size: 21px;
+  color: #fff2d1;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+.board-case-tag {
+  font: 700 11px monospace;
+  background: #25394f;
+  color: #ffd88b;
+  border: 1px solid #7d653a;
+  padding: 4px 10px;
+  letter-spacing: 1px;
+}
+
+.case-story-box {
+  background: rgba(22, 38, 58, 0.75);
+  border-left: 4px solid #e5c17d;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  line-height: 1.7;
+  font-size: 13px;
+  color: #dbe7ec;
+}
+
+/* Passenger Clue Cards Grid */
+.clue-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+.clue-passenger-card {
+  background: #142335;
+  border: 1px solid #485c73;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+  position: relative;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.clue-passenger-card.has-missing {
+  border-color: #ff6e6e;
+  background: #24191d;
+}
+.clue-card-num {
+  font: 10px monospace;
+  color: #92a9bf;
+  margin-bottom: 4px;
+  display: block;
+}
+.clue-card-info {
+  font-size: 12px;
+  margin: 3px 0;
+  color: #c9d8e5;
+}
+.clue-card-age {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f7e2af;
+  margin: 5px 0;
+}
+.missing-badge {
+  display: inline-block;
+  background: #ff3b3b;
+  color: #fff;
+  font-size: 10px;
+  padding: 3px 6px;
+  border-radius: 2px;
+  font-weight: 700;
+  animation: pulseMissing 1.2s infinite ease-in-out;
+}
+@keyframes pulseMissing {
+  0%, 100% { opacity: 0.8; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1.04); box-shadow: 0 0 10px #ff3b3b; }
+}
+
+.stamped-badge {
+  display: inline-block;
+  background: #2cb879;
+  color: #fff;
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: 2px;
+  font-weight: 700;
+  animation: stampDown 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+@keyframes stampDown {
+  0% { transform: scale(2.2) rotate(-10deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* 3D Card Flip for Encoding */
+.flip-cards-container {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+.flip-card {
+  width: 170px;
+  height: 110px;
+  perspective: 800px;
+}
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+.flip-card-front, .flip-card-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+.flip-card-front {
+  background: #1c2b3d;
+  border: 2px solid #5a7596;
+  color: #e5edf5;
+}
+.flip-card-back {
+  background: #102a24;
+  border: 2px solid #3de3a7;
+  color: #6dffd3;
+  transform: rotateY(180deg);
+}
+.flip-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.flip-card-sub {
+  font-size: 11px;
+  color: #9db2c7;
+}
+
+/* Train/Test Split Visualizer */
+.split-visual-container {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  align-items: center;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+.split-bundle {
+  flex: 1;
+  min-width: 220px;
+  max-width: 280px;
+  background: #162638;
+  border: 2px solid #5a7596;
+  padding: 14px;
+  text-align: center;
+  border-radius: 4px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.split-bundle.train-bundle {
+  border-color: #55b2e6;
+  background: linear-gradient(180deg, #182e44 0%, #112030 100%);
+}
+.split-bundle.test-bundle {
+  border-color: #e65555;
+  background: linear-gradient(180deg, #3d1b1f 0%, #201013 100%);
+}
+.bundle-icon {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+.bundle-title {
+  font-size: 16px;
+  color: #fff;
+  font-weight: 700;
+}
+.bundle-desc {
+  font-size: 11px;
+  color: #b7cad9;
+  margin-top: 5px;
+  line-height: 1.5;
+}
+
+/* Master Detective Insight Note (핵심 배움 카드) */
+.detective-insight-card {
+  background: linear-gradient(90deg, #282114 0%, #1c2533 100%);
+  border: 2px solid #e5c17d;
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin: 16px 0 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: inset 0 0 15px rgba(229, 193, 125, 0.15);
+}
+.insight-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.insight-body b {
+  display: block;
+  font-size: 13px;
+  color: #ffd88b;
+  margin-bottom: 3px;
+}
+.insight-body p {
+  margin: 0;
+  font-size: 12px;
+  color: #dce7ee;
+  line-height: 1.6;
+}
+
+/* Holographic Probability Radar (Case 4) */
+.probability-radar-box {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+.radar-controls {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.radar-control-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #172638;
+  padding: 8px 12px;
+  border: 1px solid #4a6380;
+}
+.radar-control-group label {
+  font-size: 12px;
+  color: #cedde8;
+  font-weight: 600;
+}
+.radar-btn-group {
+  display: flex;
+  gap: 4px;
+}
+.radar-choice-btn {
+  background: #243b54;
+  border: 1px solid #6382a3;
+  color: #e5f0f8;
+  padding: 5px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.radar-choice-btn.active {
+  background: #e5c17d;
+  color: #171f28;
+  border-color: #ffd787;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(229, 193, 125, 0.5);
+}
+
+.radar-gauge-display {
+  width: 150px;
+  height: 150px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(14, 34, 58, 0.9) 0%, rgba(6, 14, 25, 0.95) 100%);
+  border: 3px solid #5a80a6;
+  border-radius: 50%;
+  box-shadow: 0 0 25px rgba(90, 160, 220, 0.35);
+}
+.radar-pct {
+  font-size: 30px;
+  font-weight: 900;
+  color: #5effd8;
+  text-shadow: 0 0 15px rgba(94, 255, 216, 0.6);
+  font-family: monospace;
+}
+.radar-label {
+  font-size: 10px;
+  color: #b2d2e3;
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+
+.clue-action-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px;
+  font-size: 13px !important;
+  font-weight: 700;
+}
