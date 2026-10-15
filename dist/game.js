@@ -30,7 +30,7 @@ const questScenes = [
   { image: 'assets/city-lumi.png', place: '도시 · 야간 모빌리티 차고', chapter: '도착 시간을 부탁해', npc: '엔지니어 준', icon: '⌖', color: '#91d4dd', item: '이동 일지', desc: '비 내리는 도시의 주행 일지에서 목적지까지 걸리는 시간을 예측하는 모험입니다.', intro: [['lumi', '안녕! 심야 이동 일지를 입수했어. 수사 보드를 보며 단서를 하나씩 풀어보자!']] }
 ];
 
-let dialogueState = null, dialogueTimer = null, soundEnabled = false, soundContext = null;
+let dialogueState = null, dialogueTimer = null, soundEnabled = true, soundContext = null;
 const storySeen = [[], [], []];
 
 function stopDialogue() {
@@ -39,11 +39,137 @@ function stopDialogue() {
   dialogueState = null;
 }
 
+function initAudio() {
+  try {
+    soundContext ??= new (window.AudioContext || window.webkitAudioContext)();
+    if (soundContext.state === 'suspended') {
+      soundContext.resume().catch(() => {});
+    }
+  } catch {}
+}
+
+function playSfx(type) {
+  if (!soundEnabled) return;
+  try {
+    initAudio();
+    if (!soundContext) return;
+    const ctx = soundContext;
+    const now = ctx.currentTime;
+    
+    if (type === 'stamp') {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(160, now);
+      osc.frequency.exponentialRampToValueAtTime(35, now + 0.18);
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.18);
+
+      const slap = ctx.createOscillator(), sGain = ctx.createGain();
+      slap.type = 'triangle';
+      slap.frequency.setValueAtTime(900, now);
+      slap.frequency.exponentialRampToValueAtTime(150, now + 0.08);
+      sGain.gain.setValueAtTime(0.2, now);
+      sGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      slap.connect(sGain);
+      sGain.connect(ctx.destination);
+      slap.start(now);
+      slap.stop(now + 0.08);
+    } else if (type === 'laser') {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(980, now);
+      osc.frequency.exponentialRampToValueAtTime(200, now + 0.13);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.13);
+    } else if (type === 'slice') {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1800, now);
+      osc.frequency.exponentialRampToValueAtTime(320, now + 0.14);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.14);
+    } else if (type === 'lock') {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(240, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.22);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.22);
+    } else if (type === 'cannon') {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(280, now);
+      osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    } else if (type === 'hit') {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.exponentialRampToValueAtTime(80, now + 0.1);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.1);
+    } else if (type === 'combo') {
+      [587.33, 880, 1174.66].forEach((f, idx) => {
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = f;
+        gain.gain.setValueAtTime(0.08, now + idx * 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.1);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.04);
+        osc.stop(now + idx * 0.04 + 0.11);
+      });
+    } else if (type === 'victory') {
+      [261.63, 329.63, 392.00, 523.25, 659.25].forEach((f, idx) => {
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = f;
+        const start = now + idx * 0.09;
+        const dur = idx === 4 ? 0.5 : 0.15;
+        gain.gain.setValueAtTime(0.2, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + dur + 0.02);
+      });
+    } else {
+      playChime(true);
+    }
+  } catch {}
+}
+
 function playChime(success = false) {
   if (!soundEnabled) return;
   try {
-    soundContext ??= new (window.AudioContext || window.webkitAudioContext)();
-    soundContext.resume().catch(() => {});
+    initAudio();
+    if (!soundContext) return;
     const now = soundContext.currentTime;
     [0, 1, ...(success ? [2, 3] : [])].forEach((n) => {
       const tone = soundContext.createOscillator(), gain = soundContext.createGain();
@@ -379,315 +505,578 @@ function renderInvestigationBoard() {
 
 function renderTitanicCaseBoard(mount) {
   if (stage === 0) {
-    // Case 1: 결측치 수사
+    // Mini-game 01: 결측치 스탬프 슬램 (Whack-A-Stamp Arcade)
+    let stampedCount = 0;
+    const required = 3;
+
     mount.innerHTML = `
-      <div class="clue-board">
-        <div class="board-header">
-          <h2><span>📜</span> CASE 01: 승객 명단의 빈칸 사건</h2>
-          <span class="board-case-tag">결측치(Missing Values) 수사</span>
-        </div>
-        <div class="case-story-box">
-          <b>📖 사건 브리핑:</b> 1912년 4월, 타이타닉의 탑승 명단 5명을 입수했습니다. 그런데 <b>3번째 승객의 나이 칸</b>이 비어 있습니다! 컴퓨터는 빈칸이 남아 있으면 학습을 시작하지 못합니다. 기록을 다 버려야 할까요, 아니면 평균 나이로 채워야 할까요?
-        </div>
-        <div class="clue-cards-grid">
-          <div class="clue-passenger-card">
-            <span class="clue-card-num">승객 #01</span>
-            <div class="clue-card-info">남성 · 3등실</div>
-            <div class="clue-card-age">22.0세</div>
-          </div>
-          <div class="clue-passenger-card">
-            <span class="clue-card-num">승객 #02</span>
-            <div class="clue-card-info">여성 · 1등실</div>
-            <div class="clue-card-age">38.0세</div>
-          </div>
-          <div class="clue-passenger-card has-missing" id="case1-card">
-            <span class="clue-card-num">승객 #03</span>
-            <div class="clue-card-info">여성 · 3등실</div>
-            <div class="clue-card-age" id="case1-val"><span class="missing-badge">⚠️ 빈칸 (NaN)</span></div>
-          </div>
-          <div class="clue-passenger-card">
-            <span class="clue-card-num">승객 #04</span>
-            <div class="clue-card-info">여성 · 1등실</div>
-            <div class="clue-card-age">35.0세</div>
-          </div>
-          <div class="clue-passenger-card">
-            <span class="clue-card-num">승객 #05</span>
-            <div class="clue-card-info">남성 · 3등실</div>
-            <div class="clue-card-age">35.0세</div>
+      <div class="arcade-board">
+        <div class="arcade-header">
+          <h2 class="arcade-title"><span>🔨</span> MINI-GAME 01: 결측치 스탬프 슬램</h2>
+          <div class="arcade-hud-row">
+            <span class="arcade-score-pill" id="stamp-score-pill">구출 완료: 0 / 3</span>
+            <span class="arcade-score-pill" style="color:#ffd32a;">WHACK-A-STAMP</span>
           </div>
         </div>
-        <div id="case1-insight-slot"></div>
-        <button class="primary clue-action-btn" id="case1-btn">🔍 승객 평균 나이(28.0세)로 빈칸 채우기 쾅! →</button>
+        <div class="arcade-goal-banner">
+          <span>🎯 <strong>미션:</strong> 붉은색으로 깜빡이는 <strong>나이 누락(NaN) 카드 3장</strong>을 직접 클릭하여 [평균 28세 도장]을 쾅! 찍어주세요!</span>
+        </div>
+        <div class="stamp-cards-grid">
+          <div class="stamp-passenger-card">
+            <span class="card-pass-id">승객 #01</span>
+            <div class="card-pass-info">남성 · 3등실</div>
+            <div class="card-pass-age"><span style="color:#7bed9f; font-size:12px;">✓ 22.0세 (정상)</span></div>
+          </div>
+          <div class="stamp-passenger-card">
+            <span class="card-pass-id">승객 #02</span>
+            <div class="card-pass-info">여성 · 1등실</div>
+            <div class="card-pass-age"><span style="color:#7bed9f; font-size:12px;">✓ 38.0세 (정상)</span></div>
+          </div>
+          <div class="stamp-passenger-card clickable-target" id="target-stamp-1" data-stamped="false">
+            <span class="card-pass-id">승객 #03</span>
+            <div class="card-pass-info">여성 · 3등실</div>
+            <div class="card-pass-age" id="target-age-1"><span class="missing-click-badge">⚠️ 나이 누락! [클릭]</span></div>
+          </div>
+          <div class="stamp-passenger-card clickable-target" id="target-stamp-2" data-stamped="false">
+            <span class="card-pass-id">승객 #04</span>
+            <div class="card-pass-info">남성 · 2등실</div>
+            <div class="card-pass-age" id="target-age-2"><span class="missing-click-badge">⚠️ 나이 누락! [클릭]</span></div>
+          </div>
+          <div class="stamp-passenger-card clickable-target" id="target-stamp-3" data-stamped="false">
+            <span class="card-pass-id">승객 #05</span>
+            <div class="card-pass-info">여성 · 2등실</div>
+            <div class="card-pass-age" id="target-age-3"><span class="missing-click-badge">⚠️ 나이 누락! [클릭]</span></div>
+          </div>
+        </div>
+        <div id="stamp-clear-slot"></div>
       </div>`;
 
-    $('#case1-btn').onclick = () => {
-      playChime(true);
-      triggerScreenShake();
-      triggerFloatingToast('빈칸 보정 완료! 데이터 복구 성공!', '✨');
-      $('#case1-val').innerHTML = '<span class="stamped-badge">✓ 28.0세 (보정 완료)</span>';
-      $('#case1-card').classList.remove('has-missing');
-      $('#case1-insight-slot').innerHTML = `
-        <div class="detective-insight-card">
-          <span class="insight-icon">💡</span>
-          <div class="insight-body">
-            <b>탐정 노트 · 결측치(Missing Values) 처리의 핵심</b>
-            <p>나이가 빠졌다고 승객 기록 전체를 지워버리면, 그 승객의 귀중한 성별과 등실 정보까지 모두 잃게 됩니다! 그래서 공부할 기록들의 <b>평균값으로 빈칸을 채워 넣어(결측치 대체)</b> 데이터 손실을 방지합니다.</p>
-          </div>
-        </div>`;
-      $('#case1-btn').textContent = 'CASE 02로 전진하기: 컴퓨터의 비밀 암호 →';
-      $('#case1-btn').onclick = () => {
-        completeStage();
-        stage = 1;
-        renderLab();
+    setDialogue([['lumi', '빨간색으로 깜빡이는 카드 3장을 직접 클릭해서 [평균 28세] 도장을 쾅 찍어줘!']], () => {}, '도장 찍기!');
+
+    [1, 2, 3].forEach(id => {
+      const card = $(`#target-stamp-${id}`);
+      if (!card) return;
+      card.onclick = () => {
+        if (card.dataset.stamped === 'true') return;
+        card.dataset.stamped = 'true';
+        stampedCount++;
+
+        playSfx('stamp');
+        triggerScreenShake();
+
+        const ageEl = $(`#target-age-${id}`);
+        if (ageEl) ageEl.innerHTML = '<span class="stamped-badge-slam">★ 28.0세 보정 완료 ★</span>';
+        card.classList.remove('clickable-target');
+
+        const combo = document.createElement('span');
+        combo.className = 'floating-combo-text';
+        combo.textContent = `+100 COMBO x${stampedCount}!`;
+        card.append(combo);
+
+        $('#stamp-score-pill').textContent = `구출 완료: ${stampedCount} / 3`;
+
+        if (stampedCount < required) {
+          triggerFloatingToast(`승객 구출 (${stampedCount}/${required})!`, '🔨');
+        } else {
+          playSfx('victory');
+          triggerFloatingToast('🎉 승객 3명 전원 복구 성공! 결측치 완벽 해결!', '🏆');
+          $('#stamp-clear-slot').innerHTML = `
+            <div class="arcade-clear-card">
+              <div class="clear-title">🏆 STAGE CLEAR! 승객 명단 결측치 복구 완료</div>
+              <p class="clear-insight">
+                💡 <b>왜 기록을 삭제하지 않고 평균(28세)으로 채울까요?</b><br>
+                나이가 빠졌다고 승객 카드를 버려버리면, 그 승객의 귀중한 성별('여성')과 등실('3등실') 정보까지 모두 날아가 버립니다! 
+                그래서 전체 승객의 <b>평균 나이(28.0세)로 빈칸을 채워(결측치 대체)</b> 단 한 명의 단서도 잃지 않고 머신러닝 준비를 마쳤습니다!
+              </p>
+              <button class="primary clear-next-btn" id="next-to-stage2">⚡ 다음 미션: 0과 1 바이너리 레이저 매칭 ▶</button>
+            </div>`;
+          $('#next-to-stage2').onclick = () => {
+            completeStage();
+            stage = 1;
+            renderLab();
+          };
+          setDialogue([['lumi', '대단해! 빈칸 3개를 전부 복구했어. 이제 0과 1 숫자로 번역하러 가보자!']], () => {}, '다음으로!');
+        }
       };
-      setDialogue([['lumi', '완벽해! 빈칸을 채웠으니 이제 컴퓨터가 명단을 읽을 수 있어. 다음 수사로 가보자!']], () => {}, '좋아요!');
-    };
+    });
   } else if (stage === 1) {
-    // Case 2: 범주형 인코딩
+    // Mini-game 02: 0과 1 바이너리 레이저 매칭
+    let flippedCount = 0;
+    const required = 4;
+
     mount.innerHTML = `
-      <div class="clue-board">
-        <div class="board-header">
-          <h2><span>⚡</span> CASE 02: 컴퓨터의 비밀 암호 (인코딩)</h2>
-          <span class="board-case-tag">원-핫 인코딩(Encoding) 수사</span>
+      <div class="arcade-board">
+        <div class="arcade-header">
+          <h2 class="arcade-title"><span>⚡</span> MINI-GAME 02: 0과 1 바이너리 레이저 매칭</h2>
+          <div class="arcade-hud-row">
+            <span class="arcade-score-pill" id="binary-score-pill">변환 완료: 0 / 4</span>
+            <span class="arcade-score-pill" style="color:#5effd8;">CYBER MATRIX</span>
+          </div>
         </div>
-        <div class="case-story-box">
-          <b>📖 사건 브리핑:</b> 빈칸은 채웠지만 컴퓨터가 멈춰버렸습니다! 컴퓨터는 '여성', '남성'이라는 한글 문자를 전혀 읽지 못합니다. 컴퓨터는 오직 0과 1의 전기 신호(숫자)만 이해할 수 있습니다. 문자를 숫자로 번역해야 합니다!
+        <div class="arcade-goal-banner">
+          <span>🎯 <strong>미션:</strong> 컴퓨터는 한글 문자를 모릅니다! <strong>카드를 직접 클릭</strong>하여 0과 1의 숫자 행렬로 레이저 변환하세요!</span>
         </div>
-        <div class="flip-cards-container">
-          <div class="flip-card" id="card-female">
-            <div class="flip-card-inner">
-              <div class="flip-card-front">
-                <div class="flip-card-title">👩 여성</div>
-                <div class="flip-card-sub">글자 데이터 (컴퓨터 인식 불가)</div>
+        <div class="binary-cards-grid">
+          <div class="binary-flip-card" id="bcard-1" data-flipped="false">
+            <div class="binary-card-inner">
+              <div class="binary-face-front">
+                <span style="font-size:11px; color:#92a9bf;">승객 #01</span>
+                <strong style="font-size:16px; color:#ff9ff3;">👩 여성 (1등실)</strong>
+                <small style="color:#74b9ff; font-size:11px;">[클릭하여 이진 변환 ⚡]</small>
               </div>
-              <div class="flip-card-back">
-                <div class="flip-card-title">여성: 1 · 남성: 0</div>
-                <div class="flip-card-sub">이진수 숫자 신호 (변환 완료)</div>
+              <div class="binary-face-back">
+                <div class="binary-cube-symbol">[ 1 ]</div>
+                <strong style="font-size:12px; color:#5effd8;">여성: 1 · 남성: 0</strong>
+                <small style="color:#a8ff78; font-size:10px;">숫자 변환 완료</small>
               </div>
             </div>
           </div>
-          <div class="flip-card" id="card-male">
-            <div class="flip-card-inner">
-              <div class="flip-card-front">
-                <div class="flip-card-title">👨 남성</div>
-                <div class="flip-card-sub">글자 데이터 (컴퓨터 인식 불가)</div>
+          <div class="binary-flip-card" id="bcard-2" data-flipped="false">
+            <div class="binary-card-inner">
+              <div class="binary-face-front">
+                <span style="font-size:11px; color:#92a9bf;">승객 #02</span>
+                <strong style="font-size:16px; color:#70a1ff;">👨 남성 (3등실)</strong>
+                <small style="color:#74b9ff; font-size:11px;">[클릭하여 이진 변환 ⚡]</small>
               </div>
-              <div class="flip-card-back">
-                <div class="flip-card-title">여성: 0 · 남성: 1</div>
-                <div class="flip-card-sub">이진수 숫자 신호 (변환 완료)</div>
+              <div class="binary-face-back male-back">
+                <div class="binary-cube-symbol">[ 0 ]</div>
+                <strong style="font-size:12px; color:#ffd32a;">여성: 0 · 남성: 1</strong>
+                <small style="color:#ffa502; font-size:10px;">숫자 변환 완료</small>
+              </div>
+            </div>
+          </div>
+          <div class="binary-flip-card" id="bcard-3" data-flipped="false">
+            <div class="binary-card-inner">
+              <div class="binary-face-front">
+                <span style="font-size:11px; color:#92a9bf;">승객 #03</span>
+                <strong style="font-size:16px; color:#70a1ff;">👨 남성 (1등실)</strong>
+                <small style="color:#74b9ff; font-size:11px;">[클릭하여 이진 변환 ⚡]</small>
+              </div>
+              <div class="binary-face-back male-back">
+                <div class="binary-cube-symbol">[ 0 ]</div>
+                <strong style="font-size:12px; color:#ffd32a;">여성: 0 · 남성: 1</strong>
+                <small style="color:#ffa502; font-size:10px;">숫자 변환 완료</small>
+              </div>
+            </div>
+          </div>
+          <div class="binary-flip-card" id="bcard-4" data-flipped="false">
+            <div class="binary-card-inner">
+              <div class="binary-face-front">
+                <span style="font-size:11px; color:#92a9bf;">승객 #04</span>
+                <strong style="font-size:16px; color:#ff9ff3;">👩 여성 (2등실)</strong>
+                <small style="color:#74b9ff; font-size:11px;">[클릭하여 이진 변환 ⚡]</small>
+              </div>
+              <div class="binary-face-back">
+                <div class="binary-cube-symbol">[ 1 ]</div>
+                <strong style="font-size:12px; color:#5effd8;">여성: 1 · 남성: 0</strong>
+                <small style="color:#a8ff78; font-size:10px;">숫자 변환 완료</small>
               </div>
             </div>
           </div>
         </div>
-        <div id="case2-insight-slot"></div>
-        <button class="primary clue-action-btn" id="case2-btn">⚡ 글자를 컴퓨터용 숫자(0과 1)로 인코딩하기! →</button>
+        <div id="binary-clear-slot"></div>
       </div>`;
 
-    $('#case2-btn').onclick = () => {
-      playChime(true);
-      triggerScreenShake();
-      triggerFloatingToast('문자 ➔ 이진수 숫자 인코딩 완료!', '⚡');
-      $('#card-female').classList.add('flipped');
-      $('#card-male').classList.add('flipped');
-      $('#case2-insight-slot').innerHTML = `
-        <div class="detective-insight-card">
-          <span class="insight-icon">💡</span>
-          <div class="insight-body">
-            <b>탐정 노트 · 원-핫 인코딩(One-Hot Encoding)의 핵심</b>
-            <p>컴퓨터는 '여성'이라는 단어를 모릅니다. 그래서 여성은 1, 남성은 0처럼 <b>컴퓨터가 연산할 수 있는 숫자 행렬로 번역해주는 작업</b>을 '범주형 인코딩'이라고 부릅니다!</p>
-          </div>
-        </div>`;
-      $('#case2-btn').textContent = 'CASE 03으로 전진하기: 8:2 비밀 모의고사 →';
-      $('#case2-btn').onclick = () => {
-        completeStage();
-        stage = 2;
-        renderLab();
+    setDialogue([['lumi', '승객 카드를 클릭해서 문자를 0과 1 이진수로 번역해줘!']], () => {}, '변환하기!');
+
+    [1, 2, 3, 4].forEach(id => {
+      const card = $(`#bcard-${id}`);
+      if (!card) return;
+      card.onclick = () => {
+        if (card.dataset.flipped === 'true') return;
+        card.dataset.flipped = 'true';
+        card.classList.add('is-flipped');
+        flippedCount++;
+
+        playSfx('laser');
+        triggerScreenShake();
+
+        const combo = document.createElement('span');
+        combo.className = 'floating-combo-text';
+        combo.textContent = `+150 ENCODED!`;
+        card.append(combo);
+
+        $('#binary-score-pill').textContent = `변환 완료: ${flippedCount} / 4`;
+
+        if (flippedCount === required) {
+          playSfx('victory');
+          triggerFloatingToast('🎉 전 승객 0과 1 이진수 인코딩 완료!', '⚡');
+          $('#binary-clear-slot').innerHTML = `
+            <div class="arcade-clear-card">
+              <div class="clear-title">🏆 STAGE CLEAR! 원-핫 인코딩(One-Hot Encoding) 완료</div>
+              <p class="clear-insight">
+                💡 <b>컴퓨터는 왜 문자를 읽지 못할까요?</b><br>
+                인공지능의 연산 회로는 오직 0과 1의 전기 신호(숫자)만 계산할 수 있습니다. 
+                따라서 '여성', '남성'이라는 한글 문자를 컴퓨터가 즉시 연산할 수 있는 <b>[0, 1] 숫자 행렬로 번역</b>해준 것입니다!
+              </p>
+              <button class="primary clear-next-btn" id="next-to-stage3">✂️ 다음 미션: 8:2 정밀 데이터 슬라이서 ▶</button>
+            </div>`;
+          $('#next-to-stage3').onclick = () => {
+            completeStage();
+            stage = 2;
+            renderLab();
+          };
+          setDialogue([['lumi', '완벽해! 모든 문자가 숫자로 변환되었어. 이제 데이터를 황금 비율로 나눠보자!']], () => {}, '다음으로!');
+        }
       };
-      setDialogue([['lumi', '멋지다! 이제 모든 글자가 숫자로 바뀌었어. 드디어 AI에게 학습을 시킬 준비가 끝났어!']], () => {}, '좋아요!');
-    };
+    });
   } else if (stage === 2) {
-    // Case 3: 훈련/검증 분할
+    // Mini-game 03: 8:2 정밀 데이터 슬라이서
+    let splitRatio = 60;
+
     mount.innerHTML = `
-      <div class="clue-board">
-        <div class="board-header">
-          <h2><span>🔒</span> CASE 03: 8:2 비밀 모의고사 (분할과 학습)</h2>
-          <span class="board-case-tag">과적합 방지(Train/Test Split) 수사</span>
-        </div>
-        <div class="case-story-box">
-          <b>📖 사건 브리핑:</b> 360명의 승객 기록과 생존 정답을 컴퓨터에게 한 번에 전부 보여주면 안 됩니다! 컴퓨터가 답을 통째로 외워버려(과적합), 정작 새로운 승객을 만났을 때 엉터리 답을 낼 수 있기 때문입니다. 기록을 어떻게 나눌까요?
-        </div>
-        <div class="split-visual-container">
-          <div class="split-bundle train-bundle">
-            <div class="bundle-icon">📘</div>
-            <div class="bundle-title">공부용 훈련 데이터 (80%)</div>
-            <div class="bundle-desc">288명의 승객 기록<br>컴퓨터에게 보여주고 규칙을 학습시킬 문제집!</div>
-          </div>
-          <div class="split-bundle test-bundle" id="test-bundle">
-            <div class="bundle-icon">🔒</div>
-            <div class="bundle-title">봉인된 검증 시험지 (20%)</div>
-            <div class="bundle-desc">72명의 승객 기록<br>절대 엿보지 않고, 나중에 실력을 채점할 비밀 시험지!</div>
+      <div class="arcade-board">
+        <div class="arcade-header">
+          <h2 class="arcade-title"><span>✂️</span> MINI-GAME 03: 8:2 정밀 데이터 슬라이서</h2>
+          <div class="arcade-hud-row">
+            <span class="arcade-score-pill" id="slice-ratio-pill">분할 비율: 60% : 40%</span>
+            <span class="arcade-score-pill" style="color:#ffd32a;">과적합 방지 수사</span>
           </div>
         </div>
-        <div id="case3-insight-slot"></div>
-        <button class="primary clue-action-btn" id="case3-btn">🤖 80% 문제집으로 랜덤 포레스트 AI 훈련 시작! →</button>
+        <div class="arcade-goal-banner">
+          <span>🎯 <strong>미션:</strong> 360명의 데이터를 슬라이더로 조절하여 <strong>정확히 80% [골든 컷]</strong> 지점에서 절단하세요!</span>
+        </div>
+        <div class="slicer-arena">
+          <div class="slice-meter-wrapper">
+            <div class="slice-fill-train" id="slice-fill-train" style="width: 60%;">📘 훈련용 문제집 60%</div>
+            <div class="slice-fill-test" id="slice-fill-test" style="width: 40%;">🔒 시험지 40%</div>
+            <div class="slice-laser-line" id="slice-laser-line" style="left: 60%;"></div>
+          </div>
+          <div class="slice-controls-row">
+            <button class="secondary" id="slice-btn-down" style="padding:6px 12px; font-weight:700;">◀ -5%</button>
+            <input type="range" min="50" max="95" step="5" value="60" class="slice-range-input" id="slice-slider">
+            <button class="secondary" id="slice-btn-up" style="padding:6px 12px; font-weight:700;">+5% ▶</button>
+            <span class="slice-target-badge" id="slice-badge">목표: 80% (미달성)</span>
+          </div>
+          <button class="primary" id="slice-action-btn" style="padding:12px; font-size:14px; font-weight:800; background:#243b54;">⚡ 80% 골든 슬라이스 실행!</button>
+          
+          <div class="split-bundles-row" id="split-bundles-slot" style="display:none;">
+            <div class="bundle-box train-box">
+              <div style="font-size:24px;">📘</div>
+              <strong style="color:#00d2d3;">훈련 문제집 (80% · 288명)</strong>
+              <p style="font-size:11px; color:#bcd; margin:4px 0;">AI 두뇌가 규칙을 학습할 예제와 정답 세트!</p>
+            </div>
+            <div class="bundle-box test-box" style="position:relative;">
+              <div style="font-size:24px;">🔒</div>
+              <strong style="color:#ff6b81;">밀봉된 시험지 (20% · 72명)</strong>
+              <p style="font-size:11px; color:#bcd; margin:4px 0;">절대 미리 보지 않고 나중에 채점할 비밀 시험지!</p>
+              <div class="test-locked-chains">
+                <span style="font-size:22px;">⛓️ 🔒 ⛓️</span>
+                <strong style="font-size:12px; color:#ffd32a;">열람 금지 봉인 완료</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="slice-clear-slot"></div>
       </div>`;
 
-    $('#case3-btn').onclick = () => {
-      playChime(true);
+    setDialogue([['lumi', '슬라이더를 조절해서 정확히 80% 지점에 맞추고 [골든 슬라이스]를 실행해줘!']], () => {}, '자르기!');
+
+    function updateSliceView() {
+      $('#slice-fill-train').style.width = splitRatio + '%';
+      $('#slice-fill-train').textContent = `📘 훈련용 문제집 ${splitRatio}% (${Math.round(360 * splitRatio / 100)}명)`;
+      $('#slice-fill-test').style.width = (100 - splitRatio) + '%';
+      $('#slice-fill-test').textContent = `🔒 시험지 ${100 - splitRatio}% (${360 - Math.round(360 * splitRatio / 100)}명)`;
+      $('#slice-laser-line').style.left = splitRatio + '%';
+      $('#slice-slider').value = splitRatio;
+      $('#slice-ratio-pill').textContent = `분할 비율: ${splitRatio}% : ${100 - splitRatio}%`;
+
+      const badge = $('#slice-badge');
+      const actionBtn = $('#slice-action-btn');
+      if (splitRatio === 80) {
+        badge.className = 'slice-target-badge locked';
+        badge.textContent = '🎯 TARGET LOCKED: 80% : 20%!';
+        actionBtn.style.background = 'linear-gradient(90deg, #00d2d3, #2ed573)';
+        actionBtn.style.color = '#111';
+      } else {
+        badge.className = 'slice-target-badge';
+        badge.textContent = `목표: 80% (${splitRatio < 80 ? '더 높이세요' : '더 낮추세요'})`;
+        actionBtn.style.background = '#243b54';
+        actionBtn.style.color = '#fff';
+      }
+    }
+
+    $('#slice-slider').oninput = (e) => {
+      splitRatio = Number(e.target.value);
+      playSfx('combo');
+      updateSliceView();
+    };
+    $('#slice-btn-down').onclick = () => {
+      splitRatio = Math.max(50, splitRatio - 5);
+      playSfx('combo');
+      updateSliceView();
+    };
+    $('#slice-btn-up').onclick = () => {
+      splitRatio = Math.min(95, splitRatio + 5);
+      playSfx('combo');
+      updateSliceView();
+    };
+
+    $('#slice-action-btn').onclick = () => {
+      if (splitRatio !== 80) {
+        playSfx('combo');
+        triggerFloatingToast('💡 슬라이더를 정확히 80% 지점에 맞춰주세요!', '🎯');
+        return;
+      }
+
+      playSfx('slice');
+      setTimeout(() => playSfx('lock'), 250);
       triggerScreenShake();
-      triggerFloatingToast('머신러닝 학습 완료! 비밀 시험지 채점 준비!', '🌲');
-      $('#case3-insight-slot').innerHTML = `
-        <div class="detective-insight-card">
-          <span class="insight-icon">💡</span>
-          <div class="insight-body">
-            <b>탐정 노트 · 데이터 분할(Train / Test Split)의 핵심</b>
-            <p>학생이 시험 문제와 정답을 미리 보고 100점을 맞으면 진짜 실력을 알 수 없습니다. 인공지능도 <b>공부할 때 보지 않은 20%의 비밀 기록으로 시험을 쳐야</b> 모델의 진짜 예측 실력을 공정하게 평가할 수 있습니다!</p>
-          </div>
+      triggerFloatingToast('✂️ 8:2 데이터 분할 및 20% 시험지 봉인 완료!', '🔒');
+
+      $('#slice-action-btn').style.display = 'none';
+      $('#split-bundles-slot').style.display = 'flex';
+
+      playSfx('victory');
+      $('#slice-clear-slot').innerHTML = `
+        <div class="arcade-clear-card">
+          <div class="clear-title">🏆 STAGE CLEAR! 8:2 분할(Train / Test Split) 완료</div>
+          <p class="clear-insight">
+            💡 <b>시험지를 미리 보면 왜 안 될까요? (과적합 방지)</b><br>
+            수능 문제와 정답을 미리 다 외우고 시험을 치면 100점을 맞아도 진짜 실력이 아닙니다! 
+            인공지능도 <b>공부할 때 전혀 보지 않은 20%의 비밀 시험지</b>로 평가해야 진짜 예측 실력을 공정하게 증명할 수 있습니다!
+          </p>
+          <button class="primary clear-next-btn" id="next-to-stage4">🚢 최종 결전: 타이타닉 빙산 레이저 함포전 ▶</button>
         </div>`;
-      $('#case3-btn').textContent = 'CASE 04로 전진하기: 최후의 생존자 추리 & 빙산 결전 →';
-      $('#case3-btn').onclick = () => {
+      $('#next-to-stage4').onclick = () => {
         completeStage();
         stage = 3;
         renderLab();
       };
-      setDialogue([['lumi', 'AI가 수많은 결정 나무(랜덤 포레스트)로 생존 규칙을 완벽하게 학습했어! 이제 빙산 앞에서 실력을 시험해보자!']], () => {}, '좋아요!');
+      setDialogue([['lumi', '80% 문제집으로 AI 훈련 완료! 이제 빙산 괴수를 향해 예측 함포를 발사하러 가자!']], () => {}, '결전으로!');
     };
   } else if (stage === 3) {
-    // Case 4: 최후의 생존자 추리 & 보스전
-    let testAge = 28, testSex = 'female', testCabin = 1;
+    // Mini-game 04: 타이타닉 빙산 보스전 (실시간 레이저 함포전)
+    let bossHp = 1000;
+    let dialSex = 'female';
+    let dialCabin = 1;
+    let dialAge = 10;
 
-    function calcP() {
-      const r = results[0]?.[3];
-      const key = `${testAge}:${testSex}:${testCabin}`;
-      if (r?.passengerProbabilities?.[key] !== undefined) {
-        return (r.passengerProbabilities[key] * 100).toFixed(1);
-      }
-      let p = 0.38;
-      if (testSex === 'female') p += 0.42;
-      else p -= 0.18;
-      if (testCabin === 1) p += 0.22;
-      else if (testCabin === 3) p -= 0.15;
-      if (testAge < 15) p += 0.18;
-      return (Math.max(0.05, Math.min(0.96, p)) * 100).toFixed(1);
+    function getOutputPower() {
+      let p = 32;
+      if (dialSex === 'female') p += 43;
+      else p -= 18;
+      if (dialCabin === 1) p += 23;
+      else if (dialCabin === 3) p -= 16;
+      if (dialAge === 10) p += 16;
+      else if (dialAge === 60) p -= 12;
+      return Math.max(10, Math.min(98, p));
     }
 
-    function updateRadar() {
-      const pct = calcP();
-      const el = $('#radar-pct-val');
-      if (el) el.textContent = pct + '%';
+    function getDmg() {
+      const p = getOutputPower();
+      if (p >= 80) return 250;
+      if (p >= 50) return 150;
+      return 60;
     }
 
     mount.innerHTML = `
-      <div class="clue-board">
-        <div class="board-header">
-          <h2><span>🎯</span> CASE 04: 최후의 생존자 추리 & 빙산 결전</h2>
-          <span class="board-case-tag">AI 모델 예측(Prediction) 실전</span>
+      <div class="arcade-board">
+        <div class="arcade-header">
+          <h2 class="arcade-title"><span>🚢</span> FINAL BOSS: 빙산 괴수 vs 타이타닉 AI 예측 함포</h2>
+          <div class="arcade-hud-row">
+            <span class="arcade-score-pill" style="color:#ff6b81;">BOSS BATTLE</span>
+            <span class="arcade-score-pill" id="boss-score-pill">HP: 1,000 / 1,000</span>
+          </div>
         </div>
-        <div class="case-story-box">
-          <b>📖 사건 브리핑:</b> 공부를 마친 AI에게 새로운 승객 조건을 주고 생존 확률을 실시간으로 추리해 보세요! 전방에 다가오는 거대한 빙산을 향해 생존 확률의 진실을 발사하세요!
-        </div>
-        <div class="probability-radar-box">
-          <div class="radar-controls">
-            <div class="radar-control-group">
-              <label>승객 나이</label>
-              <div class="radar-btn-group">
-                <button class="radar-choice-btn" id="btn-age-down">- 10세</button>
-                <span id="label-age" style="min-width:55px; text-align:center; font-weight:700; color:#fce79f; padding:6px 0;">28세</span>
-                <button class="radar-choice-btn" id="btn-age-up">+ 10세</button>
+        
+        <div class="boss-battle-arena">
+          <div class="boss-hud-top">
+            <div class="boss-header-row">
+              <span class="boss-name-title" id="boss-name-label">🧊 거대 빙산 괴수 (TITANIC APOCALYPSE ICEBERG)</span>
+              <span class="boss-hp-counter" id="boss-hp-text">1,000 / 1,000 HP</span>
+            </div>
+            <div class="boss-hp-track">
+              <div class="boss-hp-bar" id="boss-hp-bar" style="width: 100%;"></div>
+            </div>
+          </div>
+          
+          <div class="boss-visual-stage" id="boss-visual-stage">
+            <div class="iceberg-monster" id="iceberg-target">🧊</div>
+          </div>
+
+          <div class="cannon-dials-grid">
+            <div class="cannon-dial-col">
+              <label>성별 모듈</label>
+              <div class="dial-btns-row">
+                <button class="dial-btn selected" id="c-sex-f">여성 👸 (+43%)</button>
+                <button class="dial-btn" id="c-sex-m">남성 🤵 (-18%)</button>
               </div>
             </div>
-            <div class="radar-control-group">
-              <label>승객 성별</label>
-              <div class="radar-btn-group">
-                <button class="radar-choice-btn active" id="btn-sex-f">여성 👸</button>
-                <button class="radar-choice-btn" id="btn-sex-m">남성 🤵</button>
+            <div class="cannon-dial-col">
+              <label>객실 등급 모듈</label>
+              <div class="dial-btns-row">
+                <button class="dial-btn selected" id="c-cab-1">1등실 👑 (+23%)</button>
+                <button class="dial-btn" id="c-cab-2">2등실 💼</button>
+                <button class="dial-btn" id="c-cab-3">3등실 🎒 (-16%)</button>
               </div>
             </div>
-            <div class="radar-control-group">
-              <label>객실 등급</label>
-              <div class="radar-btn-group">
-                <button class="radar-choice-btn active" id="btn-cab-1">1등실 👑</button>
-                <button class="radar-choice-btn" id="btn-cab-2">2등실 💼</button>
-                <button class="radar-choice-btn" id="btn-cab-3">3등실 🎒</button>
+            <div class="cannon-dial-col">
+              <label>나이 모듈</label>
+              <div class="dial-btns-row">
+                <button class="dial-btn selected" id="c-age-10">아이 👶 (+16%)</button>
+                <button class="dial-btn" id="c-age-28">청년 🧑</button>
+                <button class="dial-btn" id="c-age-60">노인 🧓 (-12%)</button>
               </div>
             </div>
           </div>
-          <div class="radar-gauge-display">
-            <span class="radar-pct" id="radar-pct-val">82.4%</span>
-            <span class="radar-label">AI 추정 생존 확률</span>
+
+          <div class="cannon-core-indicator">
+            <span style="font-size:12px; color:#cbdce8;">함포 충전 출력: <strong id="cannon-power-text" style="color:#5effd8; font-size:14px;">98% [HYPER OVERDRIVE!]</strong></span>
+            <span style="font-size:12px; color:#ffd32a;">발사당 위력: <strong id="cannon-dmg-text" style="font-size:14px;">250 DMG</strong></span>
           </div>
+
+          <button class="cannon-fire-action-btn" id="cannon-fire-btn">🔥 플라즈마 함포 발사! (CLICK TO SHOOT! 연타 가능!)</button>
         </div>
-        <div id="case4-insight-slot"></div>
-        <button class="primary clue-action-btn pulse-btn" id="case4-fire">🔥 생존 확률 포격 발사! (빙산 괴수 격파) →</button>
+        <div id="boss-clear-slot"></div>
       </div>`;
 
-    updateRadar();
+    setDialogue([['lumi', '생존율이 높은 조건을 세팅하고 함포 버튼을 마구 연타해서 빙산을 박살내줘!']], () => {}, '발사!');
 
-    $('#btn-age-down').onclick = () => {
-      testAge = Math.max(8, testAge - 10);
-      $('#label-age').textContent = testAge + '세';
-      updateRadar();
+    function updateDials() {
+      const p = getOutputPower();
+      const dmg = getDmg();
+      const txt = $('#cannon-power-text');
+      const dmgTxt = $('#cannon-dmg-text');
+      if (txt) {
+        txt.textContent = `${p}% [${p >= 80 ? '🔥 HYPER CRITICAL OVERDRIVE!' : p >= 50 ? '정상 출력' : '⚠️ 출력 부족'}]`;
+        txt.style.color = p >= 80 ? '#ff6b81' : p >= 50 ? '#5effd8' : '#ffd32a';
+      }
+      if (dmgTxt) dmgTxt.textContent = `${dmg} DMG`;
+    }
+
+    $('#c-sex-f').onclick = () => {
+      dialSex = 'female';
+      $('#c-sex-f').classList.add('selected');
+      $('#c-sex-m').classList.remove('selected');
+      playSfx('combo');
+      updateDials();
     };
-    $('#btn-age-up').onclick = () => {
-      testAge = Math.min(68, testAge + 10);
-      $('#label-age').textContent = testAge + '세';
-      updateRadar();
+    $('#c-sex-m').onclick = () => {
+      dialSex = 'male';
+      $('#c-sex-m').classList.add('selected');
+      $('#c-sex-f').classList.remove('selected');
+      playSfx('combo');
+      updateDials();
     };
-    $('#btn-sex-f').onclick = () => {
-      testSex = 'female';
-      $('#btn-sex-f').classList.add('active');
-      $('#btn-sex-m').classList.remove('active');
-      updateRadar();
+    $('#c-cab-1').onclick = () => {
+      dialCabin = 1;
+      $('#c-cab-1').classList.add('selected');
+      $('#c-cab-2').classList.remove('selected');
+      $('#c-cab-3').classList.remove('selected');
+      playSfx('combo');
+      updateDials();
     };
-    $('#btn-sex-m').onclick = () => {
-      testSex = 'male';
-      $('#btn-sex-m').classList.add('active');
-      $('#btn-sex-f').classList.remove('active');
-      updateRadar();
+    $('#c-cab-2').onclick = () => {
+      dialCabin = 2;
+      $('#c-cab-2').classList.add('selected');
+      $('#c-cab-1').classList.remove('selected');
+      $('#c-cab-3').classList.remove('selected');
+      playSfx('combo');
+      updateDials();
     };
-    $('#btn-cab-1').onclick = () => {
-      testCabin = 1;
-      $('#btn-cab-1').classList.add('active');
-      $('#btn-cab-2').classList.remove('active');
-      $('#btn-cab-3').classList.remove('active');
-      updateRadar();
+    $('#c-cab-3').onclick = () => {
+      dialCabin = 3;
+      $('#c-cab-3').classList.add('selected');
+      $('#c-cab-1').classList.remove('selected');
+      $('#c-cab-2').classList.remove('selected');
+      playSfx('combo');
+      updateDials();
     };
-    $('#btn-cab-2').onclick = () => {
-      testCabin = 2;
-      $('#btn-cab-2').classList.add('active');
-      $('#btn-cab-1').classList.remove('active');
-      $('#btn-cab-3').classList.remove('active');
-      updateRadar();
+    $('#c-age-10').onclick = () => {
+      dialAge = 10;
+      $('#c-age-10').classList.add('selected');
+      $('#c-age-28').classList.remove('selected');
+      $('#c-age-60').classList.remove('selected');
+      playSfx('combo');
+      updateDials();
     };
-    $('#btn-cab-3').onclick = () => {
-      testCabin = 3;
-      $('#btn-cab-3').classList.add('active');
-      $('#btn-cab-1').classList.remove('active');
-      $('#btn-cab-2').classList.remove('active');
-      updateRadar();
+    $('#c-age-28').onclick = () => {
+      dialAge = 28;
+      $('#c-age-28').classList.add('selected');
+      $('#c-age-10').classList.remove('selected');
+      $('#c-age-60').classList.remove('selected');
+      playSfx('combo');
+      updateDials();
+    };
+    $('#c-age-60').onclick = () => {
+      dialAge = 60;
+      $('#c-age-60').classList.add('selected');
+      $('#c-age-10').classList.remove('selected');
+      $('#c-age-28').classList.remove('selected');
+      playSfx('combo');
+      updateDials();
     };
 
-    $('#case4-fire').onclick = () => {
-      playChime(true);
+    updateDials();
+
+    const fireBtn = $('#cannon-fire-btn');
+    fireBtn.onclick = () => {
+      if (bossHp <= 0) return;
+      const dmg = getDmg();
+      bossHp = Math.max(0, bossHp - dmg);
+
+      playSfx('cannon');
+      setTimeout(() => playSfx('hit'), 80);
       triggerScreenShake();
-      triggerFloatingToast('🎯 생존 확률 포격 발사! 빙산 괴수 대격파!', '💥');
-      $('#case4-insight-slot').innerHTML = `
-        <div class="detective-insight-card">
-          <span class="insight-icon">🏆</span>
-          <div class="insight-body">
-            <b>탐정 노트 · 머신러닝 예측(Prediction)의 진실</b>
-            <p>여성과 1등실 승객의 생존 확률이 높게 추정되는 이유는, 당시 역사 속 <b>'여성과 아이 우선 구조', '상층 갑판의 구명보트 접근성'</b>이라는 실제 데이터의 숨은 규칙을 AI가 스스로 찾아냈기 때문입니다!</p>
-          </div>
-        </div>`;
-      $('#case4-fire').textContent = '🏆 탐정 보고서 완성 및 모험 지도 복귀 →';
-      $('#case4-fire').classList.remove('pulse-btn');
-      $('#case4-fire').onclick = () => {
-        completeStage();
-        titanicFinished = true;
-        try { localStorage.setItem('promptQuest.titanicComplete', 'yes'); } catch {}
-        map();
-      };
-      setDialogue([['lumi', '보스 격파 완료! 데이터 준비부터 머신러닝 예측까지, 이제 너는 진짜 데이터 탐정이야!']], () => {}, '최고예요!');
+
+      // Damage popup
+      const popup = document.createElement('span');
+      popup.className = 'damage-popup';
+      popup.style.left = (35 + Math.random() * 30) + '%';
+      popup.style.top = (25 + Math.random() * 30) + '%';
+      popup.textContent = `-${dmg} ${dmg >= 200 ? 'CRITICAL!' : 'HIT!'}`;
+      $('#boss-visual-stage').append(popup);
+      setTimeout(() => popup.remove(), 600);
+
+      const target = $('#iceberg-target');
+      if (target) {
+        target.classList.remove('damaged');
+        void target.offsetWidth;
+        target.classList.add('damaged');
+      }
+
+      const bar = $('#boss-hp-bar');
+      if (bar) bar.style.width = (bossHp / 10) + '%';
+      const text = $('#boss-hp-text');
+      if (text) text.textContent = `${bossHp} / 1,000 HP`;
+      const pill = $('#boss-score-pill');
+      if (pill) pill.textContent = `HP: ${bossHp} / 1,000`;
+
+      if (bossHp <= 0) {
+        playSfx('cannon');
+        setTimeout(() => playSfx('cannon'), 150);
+        setTimeout(() => playSfx('victory'), 350);
+
+        if (target) {
+          target.innerHTML = '💥';
+          target.style.fontSize = '100px';
+        }
+        $('#boss-name-label').innerHTML = '🎉 💥 거대 빙산 괴수 대폭파 격파 성공!';
+        fireBtn.style.display = 'none';
+
+        triggerFloatingToast('🎯 빙산 완벽 격파! 타이타닉 구출 성공!', '🏆');
+
+        $('#boss-clear-slot').innerHTML = `
+          <div class="arcade-clear-card" style="border-color:#ffd32a; box-shadow:0 0 30px rgba(255,211,42,0.4);">
+            <div class="clear-title" style="color:#ffd32a; font-size:16px;">🏆 MISSION ACCOMPLISHED! 타이타닉 구출 및 전설의 데이터 탐정 등극!</div>
+            <p class="clear-insight">
+              💡 <b>AI가 밝혀낸 실제 역사의 진실:</b><br>
+              당시 빙산 충돌 시 승객 생존을 결정지은 핵심 규칙은 바로 <b>'여성과 아이 우선 구조 원칙'</b>과 <b>'상층 1등실의 구명보트 접근성'</b>이었습니다!<br>
+              기록의 빈칸을 채우고, 0과 1로 번역하고, 공정하게 훈련시킨 AI 모델이 이 숨겨진 생존 규칙을 완벽하게 찾아내어 98% 초임계 광선포로 빙산을 파괴했습니다!
+            </p>
+            <button class="primary clear-next-btn" id="finish-titanic-btn" style="background:linear-gradient(90deg, #ffd32a, #ff9f43); color:#111;">🏆 탐정 보고서 완성 및 모험 지도 복귀 ▶</button>
+          </div>`;
+
+        $('#finish-titanic-btn').onclick = () => {
+          completeStage();
+          titanicFinished = true;
+          try { localStorage.setItem('promptQuest.titanicComplete', 'yes'); } catch {}
+          map();
+        };
+
+        setDialogue([['lumi', '빙산 괴수 대격파! 너는 이제 전설의 데이터 사이언티스트 탐정이야!']], () => {}, '최고예요!');
+      }
     };
   }
 }
@@ -695,30 +1084,27 @@ function renderTitanicCaseBoard(mount) {
 function renderGenericCaseBoard(mount) {
   const m = missions[current], b = beginner[current];
   mount.innerHTML = `
-    <div class="clue-board">
-      <div class="board-header">
-        <h2><span>🔍</span> CASE 0${stage + 1}: ${b.title[stage]}</h2>
-        <span class="board-case-tag">${steps[stage]}</span>
+    <div class="arcade-board">
+      <div class="arcade-header">
+        <h2 class="arcade-title"><span>🔍</span> CASE 0${stage + 1}: ${b.title[stage]}</h2>
+        <span class="arcade-score-pill">${steps[stage]}</span>
       </div>
-      <div class="case-story-box">
-        <b>📖 수사 목표:</b> ${b.message[stage]}
+      <div class="arcade-goal-banner">
+        <span>📖 <strong>수사 목표:</strong> ${b.message[stage]}</span>
       </div>
       <div id="generic-case-output"></div>
-      <button class="primary clue-action-btn" id="generic-case-btn">${b.actions[stage]} →</button>
+      <button class="primary clue-action-btn" id="generic-case-btn" style="padding:12px; font-size:14px; font-weight:800;">${b.actions[stage]} →</button>
     </div>`;
 
   $('#generic-case-btn').onclick = () => {
-    playChime(true);
+    playSfx('victory');
     triggerScreenShake();
     $('#generic-case-output').innerHTML = `
-      <div class="detective-insight-card">
-        <span class="insight-icon">💡</span>
-        <div class="insight-body">
-          <b>탐정 노트 · ${steps[stage]} 완료</b>
-          <p>${supportText()}</p>
-        </div>
+      <div class="arcade-clear-card">
+        <div class="clear-title">💡 탐정 노트 · ${steps[stage]} 완료</div>
+        <p class="clear-insight">${supportText()}</p>
       </div>`;
-    $('#generic-case-btn').textContent = stage === 3 ? '모험 완료 · 지도 복귀 →' : '다음 단계로 전진하기 →';
+    $('#generic-case-btn').textContent = stage === 3 ? '🏆 모험 완료 · 지도 복귀 →' : '다음 단계로 전진하기 →';
     $('#generic-case-btn').onclick = () => {
       completeStage();
       if (stage === 3) map();
@@ -730,7 +1116,7 @@ function renderGenericCaseBoard(mount) {
 function startStageStory(replay) {
   const seen = storySeen[current][stage] || results[current][stage];
   if (seen && !replay) {
-    setDialogue([['lumi', '수사 보드의 단서를 확인하고 버튼을 눌러 다음 단계로 진행해보자!']], () => {}, '확인!');
+    setDialogue([['lumi', '단서를 확인하고 미션을 직접 플레이해보자!']], () => {}, '확인!');
     return;
   }
   setDialogue(stageLines(), () => {}, stage === 0 ? '좋아요, 확인해볼게요 →' : '좋아요, 시작해요 →');
