@@ -942,3 +942,233 @@ body.playing{height:100dvh;overflow:hidden}.playing aside{height:56px;padding-le
   font-size: 13px !important;
   font-weight: 800;
 }
+
+/* ========================================================
+   EDA DISCOVERY, DECISION TREE & CAUSAL EVIDENCE STYLES
+   ======================================================== */
+
+/* EDA Filter Tabs */
+.eda-tabs-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.eda-tab-btn {
+  background: #192a3e;
+  border: 1px solid #4a6789;
+  color: #cddce9;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.eda-tab-btn:hover {
+  background: #253d58;
+  border-color: #7bed9f;
+}
+.eda-tab-btn.active {
+  background: #ecd093;
+  color: #111;
+  border-color: #ffd88b;
+  box-shadow: 0 0 10px rgba(236, 208, 147, 0.5);
+}
+
+/* EDA Interactive Comparison Bars */
+.eda-visual-panel {
+  background: #101c2c;
+  border: 1px solid #3d5673;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.eda-group-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.eda-group-label {
+  width: 110px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f1f5f9;
+  flex-shrink: 0;
+}
+.eda-bar-track {
+  flex: 1;
+  height: 22px;
+  background: #09131e;
+  border-radius: 4px;
+  border: 1px solid #334d69;
+  overflow: hidden;
+  position: relative;
+}
+.eda-bar-fill {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  font: 800 11px monospace;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.eda-bar-fill.female-fill {
+  background: linear-gradient(90deg, #ff9ff3, #f368e0);
+}
+.eda-bar-fill.male-fill {
+  background: linear-gradient(90deg, #54a0ff, #2e86de);
+}
+.eda-bar-fill.p1-fill {
+  background: linear-gradient(90deg, #ffd32a, #ff9f43);
+}
+.eda-bar-fill.p2-fill {
+  background: linear-gradient(90deg, #00d2d3, #01a3a4);
+}
+.eda-bar-fill.p3-fill {
+  background: linear-gradient(90deg, #ee5253, #c0392b);
+}
+.eda-group-stat {
+  width: 70px;
+  text-align: right;
+  font: 800 12px monospace;
+  color: #ffd32a;
+  flex-shrink: 0;
+}
+
+/* Deduction Note Card */
+.deduction-note-card {
+  background: linear-gradient(90deg, rgba(35, 45, 20, 0.95) 0%, rgba(20, 35, 30, 0.95) 100%);
+  border: 1.5px solid #2ed573;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.deduction-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.deduction-body strong {
+  display: block;
+  font-size: 13px;
+  color: #7bed9f;
+  margin-bottom: 2px;
+}
+.deduction-body p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #dceee5;
+}
+
+/* Decision Tree Diagram */
+.decision-tree-container {
+  background: #0d1825;
+  border: 1px solid #3c5471;
+  border-radius: 6px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.tree-node-root {
+  background: #1f354d;
+  border: 2px solid #5effd8;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 0 12px rgba(94, 255, 216, 0.3);
+  text-align: center;
+}
+.tree-branches-split {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  gap: 14px;
+  position: relative;
+}
+.tree-branch-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: rgba(22, 38, 56, 0.6);
+  border: 1px solid #3c536d;
+  border-radius: 6px;
+  padding: 10px;
+}
+.tree-condition-tag {
+  font: 700 11px monospace;
+  padding: 2px 8px;
+  border-radius: 3px;
+  color: #fff;
+}
+.tree-condition-tag.yes-tag {
+  background: #2ed573;
+}
+.tree-condition-tag.no-tag {
+  background: #ff4757;
+}
+.tree-leaf-result {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-align: center;
+}
+.tree-leaf-result.survive-leaf {
+  background: #11382b;
+  color: #5effd8;
+  border: 1px solid #2ed573;
+}
+.tree-leaf-result.perish-leaf {
+  background: #3b171c;
+  color: #ff6b81;
+  border: 1px solid #ff4757;
+}
+
+/* Test Set Evaluation Matrix */
+.eval-matrix-box {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 6px 0;
+}
+.eval-stat-tile {
+  background: #142335;
+  border: 1px solid #4a6787;
+  border-radius: 6px;
+  padding: 10px 14px;
+  text-align: center;
+}
+.eval-stat-tile strong {
+  display: block;
+  font: 800 24px monospace;
+  color: #5effd8;
+}
+.eval-stat-tile span {
+  font-size: 11px;
+  color: #92a9bf;
+}
+
+/* Cannon Probability Proof Tag */
+.cannon-proof-tag {
+  background: rgba(20, 36, 52, 0.85);
+  border-left: 3px solid #5effd8;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: #c9e2f5;
+  margin-top: 4px;
+}
+

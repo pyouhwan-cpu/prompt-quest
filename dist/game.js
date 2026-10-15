@@ -505,188 +505,292 @@ function renderInvestigationBoard() {
 
 function renderTitanicCaseBoard(mount) {
   if (stage === 0) {
-    // Mini-game 01: 결측치 스탬프 슬램 (Whack-A-Stamp Arcade)
-    let stampedCount = 0;
-    const required = 3;
+    // ========================================================
+    // CASE 01: [EDA 탐색] 승객 360명 전수 조사 & 생존율 충격 발견
+    // ========================================================
+    let discoveredTabs = new Set(['gender']);
+
+    function getEDAHtml(tab) {
+      if (tab === 'gender') {
+        return `
+          <div class="eda-visual-panel">
+            <div class="eda-group-row">
+              <span class="eda-group-label">👩 여성 승객 (180명)</span>
+              <div class="eda-bar-track">
+                <div class="eda-bar-fill female-fill" style="width: 76.7%;">76.7% 생존 (138명 구조)</div>
+              </div>
+              <span class="eda-group-stat">76.7%</span>
+            </div>
+            <div class="eda-group-row">
+              <span class="eda-group-label">👨 남성 승객 (180명)</span>
+              <div class="eda-bar-track">
+                <div class="eda-bar-fill male-fill" style="width: 23.3%;">23.3% 생존 (42명 구조)</div>
+              </div>
+              <span class="eda-group-stat">23.3%</span>
+            </div>
+          </div>
+          <div class="deduction-note-card">
+            <span class="deduction-icon">💡</span>
+            <div class="deduction-body">
+              <strong>[탐정 추리 제1호] 성별과 생존율의 결정적 상관관계</strong>
+              <p>여성 생존율(76.7%)이 남성(23.3%)의 <b>3.3배 이상</b>에 달합니다! 당시 선원들이 구명보트에 사람을 태울 때 철저하게 지켰던 <b>"여성과 어린이를 먼저(Women and Children First)"</b>라는 실제 역사의 구조 철칙이 데이터에 그대로 각인되어 있습니다.</p>
+            </div>
+          </div>`;
+      } else if (tab === 'cabin') {
+        return `
+          <div class="eda-visual-panel">
+            <div class="eda-group-row">
+              <span class="eda-group-label">👑 1등실 (78명)</span>
+              <div class="eda-bar-track">
+                <div class="eda-bar-fill p1-fill" style="width: 66.7%;">66.7% 생존 (52명 구조)</div>
+              </div>
+              <span class="eda-group-stat">66.7%</span>
+            </div>
+            <div class="eda-group-row">
+              <span class="eda-group-label">💼 2등실 (82명)</span>
+              <div class="eda-bar-track">
+                <div class="eda-bar-fill p2-fill" style="width: 50.0%;">50.0% 생존 (41명 구조)</div>
+              </div>
+              <span class="eda-group-stat">50.0%</span>
+            </div>
+            <div class="eda-group-row">
+              <span class="eda-group-label">🎒 3등실 (200명)</span>
+              <div class="eda-bar-track">
+                <div class="eda-bar-fill p3-fill" style="width: 23.5%;">23.5% 생존 (47명 구조)</div>
+              </div>
+              <span class="eda-group-stat">23.5%</span>
+            </div>
+          </div>
+          <div class="deduction-note-card">
+            <span class="deduction-icon">💡</span>
+            <div class="deduction-body">
+              <strong>[탐정 추리 제2호] 객실 등급에 따른 구조 불평등</strong>
+              <p>1등실 승객의 생존율(66.7%)이 3등실(23.5%)의 <b>거의 3배</b>입니다! 1등실은 구명보트가 비치된 최상층 갑판(Sun Deck)과 바로 연결되어 있었으나, 3등실은 배 밑바닥 하층부에 위치하여 비상 통로 철문이 닫혀 탈출 기회조차 얻기 어려웠습니다.</p>
+            </div>
+          </div>`;
+      } else {
+        return `
+          <div class="eda-visual-panel">
+            <div class="eda-group-row">
+              <span class="eda-group-label">👶 어린이 (15세 미만)</span>
+              <div class="eda-bar-track">
+                <div class="eda-bar-fill p1-fill" style="width: 70.5%;">70.5% 생존 (우선 구조)</div>
+              </div>
+              <span class="eda-group-stat">70.5%</span>
+            </div>
+            <div class="eda-group-row">
+              <span class="eda-group-label">🧑 성인 (15세 이상)</span>
+              <div class="eda-bar-track">
+                <div class="eda-bar-fill male-fill" style="width: 34.2%;">34.2% 생존</div>
+              </div>
+              <span class="eda-group-stat">34.2%</span>
+            </div>
+          </div>
+          <div class="deduction-note-card">
+            <span class="deduction-icon">💡</span>
+            <div class="deduction-body">
+              <strong>[탐정 추리 제3호] 어린이 승객 우선 구조의 증거</strong>
+              <p>나이가 어린 승객 역시 우선 구조 대상이었습니다. 따라서 생존 여부를 예측하는 데 가장 중요한 3대 특성(Feature)은 <b>[성별, 객실 등급, 나이]</b>로 좁혀졌습니다!</p>
+            </div>
+          </div>`;
+      }
+    }
 
     mount.innerHTML = `
       <div class="arcade-board">
         <div class="arcade-header">
-          <h2 class="arcade-title"><span>🔨</span> MINI-GAME 01: 결측치 스탬프 슬램</h2>
+          <h2 class="arcade-title"><span>📜</span> CASE 01: 승객 360명 전수 조사 & 생존율 충격 발견</h2>
           <div class="arcade-hud-row">
-            <span class="arcade-score-pill" id="stamp-score-pill">구출 완료: 0 / 3</span>
-            <span class="arcade-score-pill" style="color:#ffd32a;">WHACK-A-STAMP</span>
+            <span class="arcade-score-pill" id="eda-progress-pill">단서 수집: 1 / 2</span>
+            <span class="arcade-score-pill" style="color:#ffd32a;">탐색적 데이터 분석 (EDA)</span>
           </div>
         </div>
         <div class="arcade-goal-banner">
-          <span>🎯 <strong>미션:</strong> 붉은색으로 깜빡이는 <strong>나이 누락(NaN) 카드 3장</strong>을 직접 클릭하여 [평균 28세 도장]을 쾅! 찍어주세요!</span>
+          <span>🎯 <strong>수사 목표:</strong> 아래 탭을 클릭하여 <strong>성별과 객실 등급에 따른 생존율 차이</strong>의 숨겨진 원인을 밝혀내세요!</span>
         </div>
-        <div class="stamp-cards-grid">
-          <div class="stamp-passenger-card">
-            <span class="card-pass-id">승객 #01</span>
-            <div class="card-pass-info">남성 · 3등실</div>
-            <div class="card-pass-age"><span style="color:#7bed9f; font-size:12px;">✓ 22.0세 (정상)</span></div>
-          </div>
-          <div class="stamp-passenger-card">
-            <span class="card-pass-id">승객 #02</span>
-            <div class="card-pass-info">여성 · 1등실</div>
-            <div class="card-pass-age"><span style="color:#7bed9f; font-size:12px;">✓ 38.0세 (정상)</span></div>
-          </div>
-          <div class="stamp-passenger-card clickable-target" id="target-stamp-1" data-stamped="false">
-            <span class="card-pass-id">승객 #03</span>
-            <div class="card-pass-info">여성 · 3등실</div>
-            <div class="card-pass-age" id="target-age-1"><span class="missing-click-badge">⚠️ 나이 누락! [클릭]</span></div>
-          </div>
-          <div class="stamp-passenger-card clickable-target" id="target-stamp-2" data-stamped="false">
-            <span class="card-pass-id">승객 #04</span>
-            <div class="card-pass-info">남성 · 2등실</div>
-            <div class="card-pass-age" id="target-age-2"><span class="missing-click-badge">⚠️ 나이 누락! [클릭]</span></div>
-          </div>
-          <div class="stamp-passenger-card clickable-target" id="target-stamp-3" data-stamped="false">
-            <span class="card-pass-id">승객 #05</span>
-            <div class="card-pass-info">여성 · 2등실</div>
-            <div class="card-pass-age" id="target-age-3"><span class="missing-click-badge">⚠️ 나이 누락! [클릭]</span></div>
-          </div>
+        
+        <div class="eda-tabs-bar">
+          <button class="eda-tab-btn active" id="tab-gender">👩 vs 👨 성별 기준 생존율</button>
+          <button class="eda-tab-btn" id="tab-cabin">👑 객실 등급별 생존율</button>
+          <button class="eda-tab-btn" id="tab-age">👶 나이대별 생존율</button>
         </div>
-        <div id="stamp-clear-slot"></div>
+
+        <div id="eda-content-container">
+          ${getEDAHtml('gender')}
+        </div>
+
+        <div id="eda-clear-slot" style="margin-top: 8px;">
+          <button class="primary" id="btn-to-stage2" style="width:100%; padding:12px; font-size:14px; font-weight:800; background:linear-gradient(90deg, #2ed573, #00d2d3); color:#111;">
+            🔍 핵심 생존 원인(성별·등실·나이) 입증 완료! ➔ 제2장: 오염된 기록 복구로 이동 ▶
+          </button>
+        </div>
       </div>`;
 
-    setDialogue([['lumi', '빨간색으로 깜빡이는 카드 3장을 직접 클릭해서 [평균 28세] 도장을 쾅 찍어줘!']], () => {}, '도장 찍기!');
+    setDialogue([['lumi', '성별과 등실 탭을 눌러서 생존율 차이를 눈으로 직접 확인해봐!']], () => {}, '조사하기!');
 
-    [1, 2, 3].forEach(id => {
-      const card = $(`#target-stamp-${id}`);
-      if (!card) return;
-      card.onclick = () => {
-        if (card.dataset.stamped === 'true') return;
-        card.dataset.stamped = 'true';
-        stampedCount++;
+    function switchEda(tab) {
+      discoveredTabs.add(tab);
+      $('#tab-gender').classList.toggle('active', tab === 'gender');
+      $('#tab-cabin').classList.toggle('active', tab === 'cabin');
+      $('#tab-age').classList.toggle('active', tab === 'age');
+      $('#eda-content-container').innerHTML = getEDAHtml(tab);
+      $('#eda-progress-pill').textContent = `단서 수집: ${Math.min(3, discoveredTabs.size)} / 2`;
+      playSfx('combo');
+    }
 
-        playSfx('stamp');
-        triggerScreenShake();
+    $('#tab-gender').onclick = () => switchEda('gender');
+    $('#tab-cabin').onclick = () => switchEda('cabin');
+    $('#tab-age').onclick = () => switchEda('age');
 
-        const ageEl = $(`#target-age-${id}`);
-        if (ageEl) ageEl.innerHTML = '<span class="stamped-badge-slam">★ 28.0세 보정 완료 ★</span>';
-        card.classList.remove('clickable-target');
+    $('#btn-to-stage2').onclick = () => {
+      playSfx('victory');
+      triggerScreenShake();
+      completeStage();
+      stage = 1;
+      renderLab();
+    };
 
-        const combo = document.createElement('span');
-        combo.className = 'floating-combo-text';
-        combo.textContent = `+100 COMBO x${stampedCount}!`;
-        card.append(combo);
-
-        $('#stamp-score-pill').textContent = `구출 완료: ${stampedCount} / 3`;
-
-        if (stampedCount < required) {
-          triggerFloatingToast(`승객 구출 (${stampedCount}/${required})!`, '🔨');
-        } else {
-          playSfx('victory');
-          triggerFloatingToast('🎉 승객 3명 전원 복구 성공! 결측치 완벽 해결!', '🏆');
-          $('#stamp-clear-slot').innerHTML = `
-            <div class="arcade-clear-card">
-              <div class="clear-title">🏆 STAGE CLEAR! 승객 명단 결측치 복구 완료</div>
-              <p class="clear-insight">
-                💡 <b>왜 기록을 삭제하지 않고 평균(28세)으로 채울까요?</b><br>
-                나이가 빠졌다고 승객 카드를 버려버리면, 그 승객의 귀중한 성별('여성')과 등실('3등실') 정보까지 모두 날아가 버립니다! 
-                그래서 전체 승객의 <b>평균 나이(28.0세)로 빈칸을 채워(결측치 대체)</b> 단 한 명의 단서도 잃지 않고 머신러닝 준비를 마쳤습니다!
-              </p>
-              <button class="primary clear-next-btn" id="next-to-stage2">⚡ 다음 미션: 0과 1 바이너리 레이저 매칭 ▶</button>
-            </div>`;
-          $('#next-to-stage2').onclick = () => {
-            completeStage();
-            stage = 1;
-            renderLab();
-          };
-          setDialogue([['lumi', '대단해! 빈칸 3개를 전부 복구했어. 이제 0과 1 숫자로 번역하러 가보자!']], () => {}, '다음으로!');
-        }
-      };
-    });
   } else if (stage === 1) {
-    // Mini-game 02: 0과 1 바이너리 레이저 매칭
-    let flippedCount = 0;
-    const required = 4;
+    // ========================================================
+    // CASE 02: [데이터 전처리] 오염된 기록 복구 실험실 & 이진수 인코딩
+    // ========================================================
+    let missingResolved = false;
+    let encodedCount = 0;
 
     mount.innerHTML = `
       <div class="arcade-board">
         <div class="arcade-header">
-          <h2 class="arcade-title"><span>⚡</span> MINI-GAME 02: 0과 1 바이너리 레이저 매칭</h2>
+          <h2 class="arcade-title"><span>🔧</span> CASE 02: 오염된 기록 복구 & 이진수 인코딩</h2>
           <div class="arcade-hud-row">
-            <span class="arcade-score-pill" id="binary-score-pill">변환 완료: 0 / 4</span>
-            <span class="arcade-score-pill" style="color:#5effd8;">CYBER MATRIX</span>
+            <span class="arcade-score-pill" id="prep-pill">수사 진행: 0 / 2</span>
+            <span class="arcade-score-pill" style="color:#5effd8;">데이터 전처리 (Preprocessing)</span>
           </div>
         </div>
         <div class="arcade-goal-banner">
-          <span>🎯 <strong>미션:</strong> 컴퓨터는 한글 문자를 모릅니다! <strong>카드를 직접 클릭</strong>하여 0과 1의 숫자 행렬로 레이저 변환하세요!</span>
+          <span>🎯 <strong>수사 목표:</strong> 360명 중 48명의 나이(Age)가 비어 있습니다. 기록을 삭제할지, 평균으로 채울지 선택하세요!</span>
         </div>
-        <div class="binary-cards-grid">
-          <div class="binary-flip-card" id="bcard-1" data-flipped="false">
-            <div class="binary-card-inner">
-              <div class="binary-face-front">
-                <span style="font-size:11px; color:#92a9bf;">승객 #01</span>
-                <strong style="font-size:16px; color:#ff9ff3;">👩 여성 (1등실)</strong>
-                <small style="color:#74b9ff; font-size:11px;">[클릭하여 이진 변환 ⚡]</small>
-              </div>
-              <div class="binary-face-back">
-                <div class="binary-cube-symbol">[ 1 ]</div>
-                <strong style="font-size:12px; color:#5effd8;">여성: 1 · 남성: 0</strong>
-                <small style="color:#a8ff78; font-size:10px;">숫자 변환 완료</small>
+
+        <div style="background:#132235; border:1px solid #415e80; border-radius:6px; padding:12px; margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong style="color:#ffd32a; font-size:13px;">실험 1: 48명의 나이 결측치(NaN) 처리 딜레마</strong>
+            <span style="font-size:11px; color:#8faac4;">전체 360명 중 결측치 48명 (13.3%)</span>
+          </div>
+          <div style="display:flex; gap:10px;" id="impute-btn-row">
+            <button class="secondary" id="btn-drop-rows" style="flex:1; border-color:#ff4757; color:#ff6b81; padding:8px; font-weight:700;">
+              ❌ 결측치 48명 통째로 삭제하기 (Row Drop)
+            </button>
+            <button class="primary" id="btn-impute-mean" style="flex:1; background:linear-gradient(90deg, #2ed573, #1e90ff); padding:8px; font-weight:800; color:#fff;">
+              ✅ 승객 평균 나이(39.4세)로 채워넣기 (Mean Imputation)
+            </button>
+          </div>
+          <div id="impute-feedback-slot" style="margin-top:8px;"></div>
+        </div>
+
+        <div id="encoding-section" style="opacity:0.4; pointer-events:none; transition:opacity 0.3s;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <strong style="color:#5effd8; font-size:13px;">실험 2: 범주형 글자('여성', '남성')를 0과 1 숫자로 원-핫 인코딩</strong>
+            <span style="font-size:11px; color:#8faac4;">카드를 클릭해 번역하세요</span>
+          </div>
+          <div class="binary-cards-grid">
+            <div class="binary-flip-card" id="bcard-1" data-flipped="false">
+              <div class="binary-card-inner">
+                <div class="binary-face-front">
+                  <span style="font-size:11px; color:#92a9bf;">승객 #01</span>
+                  <strong style="font-size:15px; color:#ff9ff3;">👩 여성 (1등실)</strong>
+                  <small style="color:#74b9ff; font-size:10px;">[클릭하여 인코딩 ⚡]</small>
+                </div>
+                <div class="binary-face-back">
+                  <div class="binary-cube-symbol">[ 1, 0 ]</div>
+                  <strong style="font-size:11px; color:#5effd8;">Sex_female=1, Sex_male=0</strong>
+                  <small style="color:#a8ff78; font-size:10px;">숫자 행렬 변환 완료</small>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="binary-flip-card" id="bcard-2" data-flipped="false">
-            <div class="binary-card-inner">
-              <div class="binary-face-front">
-                <span style="font-size:11px; color:#92a9bf;">승객 #02</span>
-                <strong style="font-size:16px; color:#70a1ff;">👨 남성 (3등실)</strong>
-                <small style="color:#74b9ff; font-size:11px;">[클릭하여 이진 변환 ⚡]</small>
-              </div>
-              <div class="binary-face-back male-back">
-                <div class="binary-cube-symbol">[ 0 ]</div>
-                <strong style="font-size:12px; color:#ffd32a;">여성: 0 · 남성: 1</strong>
-                <small style="color:#ffa502; font-size:10px;">숫자 변환 완료</small>
-              </div>
-            </div>
-          </div>
-          <div class="binary-flip-card" id="bcard-3" data-flipped="false">
-            <div class="binary-card-inner">
-              <div class="binary-face-front">
-                <span style="font-size:11px; color:#92a9bf;">승객 #03</span>
-                <strong style="font-size:16px; color:#70a1ff;">👨 남성 (1등실)</strong>
-                <small style="color:#74b9ff; font-size:11px;">[클릭하여 이진 변환 ⚡]</small>
-              </div>
-              <div class="binary-face-back male-back">
-                <div class="binary-cube-symbol">[ 0 ]</div>
-                <strong style="font-size:12px; color:#ffd32a;">여성: 0 · 남성: 1</strong>
-                <small style="color:#ffa502; font-size:10px;">숫자 변환 완료</small>
+            <div class="binary-flip-card" id="bcard-2" data-flipped="false">
+              <div class="binary-card-inner">
+                <div class="binary-face-front">
+                  <span style="font-size:11px; color:#92a9bf;">승객 #02</span>
+                  <strong style="font-size:15px; color:#70a1ff;">👨 남성 (3등실)</strong>
+                  <small style="color:#74b9ff; font-size:10px;">[클릭하여 인코딩 ⚡]</small>
+                </div>
+                <div class="binary-face-back male-back">
+                  <div class="binary-cube-symbol">[ 0, 1 ]</div>
+                  <strong style="font-size:11px; color:#ffd32a;">Sex_female=0, Sex_male=1</strong>
+                  <small style="color:#ffa502; font-size:10px;">숫자 행렬 변환 완료</small>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="binary-flip-card" id="bcard-4" data-flipped="false">
-            <div class="binary-card-inner">
-              <div class="binary-face-front">
-                <span style="font-size:11px; color:#92a9bf;">승객 #04</span>
-                <strong style="font-size:16px; color:#ff9ff3;">👩 여성 (2등실)</strong>
-                <small style="color:#74b9ff; font-size:11px;">[클릭하여 이진 변환 ⚡]</small>
+            <div class="binary-flip-card" id="bcard-3" data-flipped="false">
+              <div class="binary-card-inner">
+                <div class="binary-face-front">
+                  <span style="font-size:11px; color:#92a9bf;">승객 #03</span>
+                  <strong style="font-size:15px; color:#70a1ff;">👨 남성 (1등실)</strong>
+                  <small style="color:#74b9ff; font-size:10px;">[클릭하여 인코딩 ⚡]</small>
+                </div>
+                <div class="binary-face-back male-back">
+                  <div class="binary-cube-symbol">[ 0, 1 ]</div>
+                  <strong style="font-size:11px; color:#ffd32a;">Sex_female=0, Sex_male=1</strong>
+                  <small style="color:#ffa502; font-size:10px;">숫자 행렬 변환 완료</small>
+                </div>
               </div>
-              <div class="binary-face-back">
-                <div class="binary-cube-symbol">[ 1 ]</div>
-                <strong style="font-size:12px; color:#5effd8;">여성: 1 · 남성: 0</strong>
-                <small style="color:#a8ff78; font-size:10px;">숫자 변환 완료</small>
+            </div>
+            <div class="binary-flip-card" id="bcard-4" data-flipped="false">
+              <div class="binary-card-inner">
+                <div class="binary-face-front">
+                  <span style="font-size:11px; color:#92a9bf;">승객 #04</span>
+                  <strong style="font-size:15px; color:#ff9ff3;">👩 여성 (2등실)</strong>
+                  <small style="color:#74b9ff; font-size:10px;">[클릭하여 인코딩 ⚡]</small>
+                </div>
+                <div class="binary-face-back">
+                  <div class="binary-cube-symbol">[ 1, 0 ]</div>
+                  <strong style="font-size:11px; color:#5effd8;">Sex_female=1, Sex_male=0</strong>
+                  <small style="color:#a8ff78; font-size:10px;">숫자 행렬 변환 완료</small>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div id="binary-clear-slot"></div>
+        <div id="prep-clear-slot"></div>
       </div>`;
 
-    setDialogue([['lumi', '승객 카드를 클릭해서 문자를 0과 1 이진수로 번역해줘!']], () => {}, '변환하기!');
+    setDialogue([['lumi', '결측치를 삭제해보고, 평균으로도 채워보면서 차이점을 확인해봐!']], () => {}, '실험하기!');
+
+    $('#btn-drop-rows').onclick = () => {
+      playSfx('hit');
+      triggerScreenShake();
+      $('#impute-feedback-slot').innerHTML = `
+        <div style="background:#2d1419; border:1px solid #ff4757; border-radius:4px; padding:8px 12px; font-size:12px; color:#ffb3ba;">
+          ⚠️ <strong>치명적 손실 발생:</strong> 나이가 없다고 48명의 승객을 삭제하면, 그 승객들의 귀중한 성별('여성')과 등실('1등실') 데이터까지 영구히 사라져 전체 데이터의 13.3%가 손실됩니다! 우측의 [평균으로 채워넣기]를 선택하세요!
+        </div>`;
+    };
+
+    $('#btn-impute-mean').onclick = () => {
+      if (missingResolved) return;
+      missingResolved = true;
+      playSfx('stamp');
+      triggerScreenShake();
+      triggerFloatingToast('39.4세 평균 대체 완료! 승객 360명 100% 보존!', '✨');
+
+      $('#impute-btn-row').innerHTML = `
+        <div style="width:100%; background:#103525; border:1px solid #2ed573; border-radius:4px; padding:8px 12px; color:#5effd8; font-size:12px; font-weight:700;">
+          ★ 보정 성공: 승객 평균 나이(39.4세)로 빈칸을 채워 데이터 손실을 0%로 완벽 방어했습니다!
+        </div>`;
+      $('#impute-feedback-slot').innerHTML = '';
+
+      $('#encoding-section').style.opacity = '1';
+      $('#encoding-section').style.pointerEvents = 'auto';
+      $('#prep-pill').textContent = '수사 진행: 1 / 2';
+      setDialogue([['lumi', '잘했어! 이제 아래 카드들을 클릭해서 글자를 컴퓨터용 0과 1 숫자로 번역해줘!']], () => {}, '인코딩!');
+    };
 
     [1, 2, 3, 4].forEach(id => {
       const card = $(`#bcard-${id}`);
       if (!card) return;
       card.onclick = () => {
-        if (card.dataset.flipped === 'true') return;
+        if (!missingResolved || card.dataset.flipped === 'true') return;
         card.dataset.flipped = 'true';
         card.classList.add('is-flipped');
-        flippedCount++;
+        encodedCount++;
 
         playSfx('laser');
         triggerScreenShake();
@@ -696,49 +800,51 @@ function renderTitanicCaseBoard(mount) {
         combo.textContent = `+150 ENCODED!`;
         card.append(combo);
 
-        $('#binary-score-pill').textContent = `변환 완료: ${flippedCount} / 4`;
-
-        if (flippedCount === required) {
+        if (encodedCount === 4) {
           playSfx('victory');
-          triggerFloatingToast('🎉 전 승객 0과 1 이진수 인코딩 완료!', '⚡');
-          $('#binary-clear-slot').innerHTML = `
+          $('#prep-pill').textContent = '수사 진행: 2 / 2 (완료)';
+          triggerFloatingToast('🎉 전 승객 수치형 행렬 변환 완료!', '⚡');
+          $('#prep-clear-slot').innerHTML = `
             <div class="arcade-clear-card">
-              <div class="clear-title">🏆 STAGE CLEAR! 원-핫 인코딩(One-Hot Encoding) 완료</div>
+              <div class="clear-title">🏆 STAGE CLEAR! 데이터 전처리 완료</div>
               <p class="clear-insight">
-                💡 <b>컴퓨터는 왜 문자를 읽지 못할까요?</b><br>
-                인공지능의 연산 회로는 오직 0과 1의 전기 신호(숫자)만 계산할 수 있습니다. 
-                따라서 '여성', '남성'이라는 한글 문자를 컴퓨터가 즉시 연산할 수 있는 <b>[0, 1] 숫자 행렬로 번역</b>해준 것입니다!
+                💡 <b>전처리의 핵심 깨달음:</b><br>
+                1. 결측치(Age)를 지우지 않고 평균값으로 채워 <b>데이터 손실을 100% 방지</b>했습니다.<br>
+                2. 컴퓨터가 이해하지 못하는 텍스트(Sex)를 <b>[0, 1] 원-핫 인코딩 행렬로 번역</b>하여 AI 알고리즘에 입력할 수 있는 완벽한 수학 테이블을 완성했습니다!
               </p>
-              <button class="primary clear-next-btn" id="next-to-stage3">✂️ 다음 미션: 8:2 정밀 데이터 슬라이서 ▶</button>
+              <button class="primary clear-next-btn" id="next-to-stage3">🌲 제3장: 8:2 모의고사 & 의사결정나무 AI 두뇌 훈련 ▶</button>
             </div>`;
           $('#next-to-stage3').onclick = () => {
             completeStage();
             stage = 2;
             renderLab();
           };
-          setDialogue([['lumi', '완벽해! 모든 문자가 숫자로 변환되었어. 이제 데이터를 황금 비율로 나눠보자!']], () => {}, '다음으로!');
+          setDialogue([['lumi', '데이터 준비 완료! 이제 AI에게 8:2 비율로 모의고사를 학습시켜보자!']], () => {}, '다음으로!');
         }
       };
     });
+
   } else if (stage === 2) {
-    // Mini-game 03: 8:2 정밀 데이터 슬라이서
+    // ========================================================
+    // CASE 03: [모델 학습] 8:2 분할과 의사결정나무(Decision Tree) 성장
+    // ========================================================
     let splitRatio = 60;
 
     mount.innerHTML = `
       <div class="arcade-board">
         <div class="arcade-header">
-          <h2 class="arcade-title"><span>✂️</span> MINI-GAME 03: 8:2 정밀 데이터 슬라이서</h2>
+          <h2 class="arcade-title"><span>🌲</span> CASE 03: 8:2 비밀 모의고사 & AI 의사결정나무</h2>
           <div class="arcade-hud-row">
             <span class="arcade-score-pill" id="slice-ratio-pill">분할 비율: 60% : 40%</span>
-            <span class="arcade-score-pill" style="color:#ffd32a;">과적합 방지 수사</span>
+            <span class="arcade-score-pill" style="color:#ffd32a;">과적합(Overfitting) 방지</span>
           </div>
         </div>
         <div class="arcade-goal-banner">
-          <span>🎯 <strong>미션:</strong> 360명의 데이터를 슬라이더로 조절하여 <strong>정확히 80% [골든 컷]</strong> 지점에서 절단하세요!</span>
+          <span>🎯 <strong>수사 목표:</strong> 정답을 통째로 외우는 과적합을 막기 위해 데이터를 <strong>80% 문제집</strong>과 <strong>20% 시험지</strong>로 나누세요!</span>
         </div>
         <div class="slicer-arena">
           <div class="slice-meter-wrapper">
-            <div class="slice-fill-train" id="slice-fill-train" style="width: 60%;">📘 훈련용 문제집 60%</div>
+            <div class="slice-fill-train" id="slice-fill-train" style="width: 60%;">📘 훈련 문제집 60%</div>
             <div class="slice-fill-test" id="slice-fill-test" style="width: 40%;">🔒 시험지 40%</div>
             <div class="slice-laser-line" id="slice-laser-line" style="left: 60%;"></div>
           </div>
@@ -750,19 +856,42 @@ function renderTitanicCaseBoard(mount) {
           </div>
           <button class="primary" id="slice-action-btn" style="padding:12px; font-size:14px; font-weight:800; background:#243b54;">⚡ 80% 골든 슬라이스 실행!</button>
           
-          <div class="split-bundles-row" id="split-bundles-slot" style="display:none;">
-            <div class="bundle-box train-box">
-              <div style="font-size:24px;">📘</div>
-              <strong style="color:#00d2d3;">훈련 문제집 (80% · 288명)</strong>
-              <p style="font-size:11px; color:#bcd; margin:4px 0;">AI 두뇌가 규칙을 학습할 예제와 정답 세트!</p>
+          <div id="tree-reveal-slot" style="display:none; margin-top:10px;">
+            <div class="decision-tree-container">
+              <div style="font-size:11px; color:#92a9bf; margin-bottom:4px;">✦ 288명의 데이터를 학습하여 AI가 스스로 구축한 [의사결정나무(Decision Tree)]</div>
+              <div class="tree-node-root">
+                ❓ 승객의 성별이 [여성(Female)]인가?
+              </div>
+              <div class="tree-branches-split">
+                <div class="tree-branch-col">
+                  <span class="tree-condition-tag yes-tag">YES (여성)</span>
+                  <div class="tree-leaf-result survive-leaf">
+                    ★ 생존 예측: 76.7% 확률 생존<br>
+                    <small style="color:#b2d2e3;">(여성·어린이 우선 구조 철칙)</small>
+                  </div>
+                </div>
+                <div class="tree-branch-col">
+                  <span class="tree-condition-tag no-tag">NO (남성)</span>
+                  <div class="tree-node-root" style="font-size:11px; padding:6px 10px;">
+                    ❓ 객실 등급이 [1등실]이거나 [어린이]인가?
+                  </div>
+                  <div style="display:flex; gap:6px; width:100%; margin-top:4px;">
+                    <div style="flex:1;" class="tree-leaf-result survive-leaf">
+                      <span style="font-size:10px;">YES: 60.8% 생존</span>
+                    </div>
+                    <div style="flex:1;" class="tree-leaf-result perish-leaf">
+                      <span style="font-size:10px;">NO: 15.2% 생존 (3등실 남성)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="bundle-box test-box" style="position:relative;">
-              <div style="font-size:24px;">🔒</div>
-              <strong style="color:#ff6b81;">밀봉된 시험지 (20% · 72명)</strong>
-              <p style="font-size:11px; color:#bcd; margin:4px 0;">절대 미리 보지 않고 나중에 채점할 비밀 시험지!</p>
-              <div class="test-locked-chains">
-                <span style="font-size:22px;">⛓️ 🔒 ⛓️</span>
-                <strong style="font-size:12px; color:#ffd32a;">열람 금지 봉인 완료</strong>
+            
+            <div class="deduction-note-card" style="margin-top:8px;">
+              <span class="deduction-icon">💡</span>
+              <div class="deduction-body">
+                <strong>[인과관계 입증] 우리가 발견한 역사적 사실 = AI가 학습한 알고리즘!</strong>
+                <p>보세요! 1장에서 우리가 발견했던 규칙(여성 우선, 1등실 우선, 어린이 우선)을 <b>AI 모델이 288명의 데이터를 분석하여 스스로 정확한 의사결정나무(Decision Tree)로 정립</b>했습니다! 정답이 우연히 나온 것이 아니라 데이터의 명백한 인과관계입니다.</p>
               </div>
             </div>
           </div>
@@ -770,11 +899,11 @@ function renderTitanicCaseBoard(mount) {
         <div id="slice-clear-slot"></div>
       </div>`;
 
-    setDialogue([['lumi', '슬라이더를 조절해서 정확히 80% 지점에 맞추고 [골든 슬라이스]를 실행해줘!']], () => {}, '자르기!');
+    setDialogue([['lumi', '슬라이더를 80%에 맞추고 절단해서 AI가 만드는 규칙 나무를 확인해봐!']], () => {}, '자르기!');
 
     function updateSliceView() {
       $('#slice-fill-train').style.width = splitRatio + '%';
-      $('#slice-fill-train').textContent = `📘 훈련용 문제집 ${splitRatio}% (${Math.round(360 * splitRatio / 100)}명)`;
+      $('#slice-fill-train').textContent = `📘 훈련 문제집 ${splitRatio}% (${Math.round(360 * splitRatio / 100)}명)`;
       $('#slice-fill-test').style.width = (100 - splitRatio) + '%';
       $('#slice-fill-test').textContent = `🔒 시험지 ${100 - splitRatio}% (${360 - Math.round(360 * splitRatio / 100)}명)`;
       $('#slice-laser-line').style.left = splitRatio + '%';
@@ -822,65 +951,112 @@ function renderTitanicCaseBoard(mount) {
       playSfx('slice');
       setTimeout(() => playSfx('lock'), 250);
       triggerScreenShake();
-      triggerFloatingToast('✂️ 8:2 데이터 분할 및 20% 시험지 봉인 완료!', '🔒');
+      triggerFloatingToast('✂️ 8:2 데이터 분할 및 AI 의사결정나무 훈련 성공!', '🌲');
 
       $('#slice-action-btn').style.display = 'none';
-      $('#split-bundles-slot').style.display = 'flex';
+      $('#tree-reveal-slot').style.display = 'block';
 
       playSfx('victory');
       $('#slice-clear-slot').innerHTML = `
         <div class="arcade-clear-card">
-          <div class="clear-title">🏆 STAGE CLEAR! 8:2 분할(Train / Test Split) 완료</div>
+          <div class="clear-title">🏆 STAGE CLEAR! 머신러닝 의사결정나무 학습 완료</div>
           <p class="clear-insight">
-            💡 <b>시험지를 미리 보면 왜 안 될까요? (과적합 방지)</b><br>
-            수능 문제와 정답을 미리 다 외우고 시험을 치면 100점을 맞아도 진짜 실력이 아닙니다! 
-            인공지능도 <b>공부할 때 전혀 보지 않은 20%의 비밀 시험지</b>로 평가해야 진짜 예측 실력을 공정하게 증명할 수 있습니다!
+            💡 <b>과적합 방지의 원리:</b><br>
+            AI가 288명의 문제집으로만 규칙을 학습했고, <b>20%(72명)의 시험지는 아직 한 번도 보지 않았습니다!</b><br>
+            이제 제4장에서 이 봉인된 시험지를 열어 AI의 진짜 예측 실력을 채점하고, 빙산과의 최종 결전에 나섭니다!
           </p>
-          <button class="primary clear-next-btn" id="next-to-stage4">🚢 최종 결전: 타이타닉 빙산 레이저 함포전 ▶</button>
+          <button class="primary clear-next-btn" id="next-to-stage4">🎯 제4장: 봉인된 시험지 채점 & 데이터 기반 빙산 결전 ▶</button>
         </div>`;
       $('#next-to-stage4').onclick = () => {
         completeStage();
         stage = 3;
         renderLab();
       };
-      setDialogue([['lumi', '80% 문제집으로 AI 훈련 완료! 이제 빙산 괴수를 향해 예측 함포를 발사하러 가자!']], () => {}, '결전으로!');
+      setDialogue([['lumi', 'AI가 완벽한 규칙 나무를 만들었어! 이제 봉인된 72명의 시험지를 채점하고 빙산을 부수러 가자!']], () => {}, '결전으로!');
     };
+
   } else if (stage === 3) {
-    // Mini-game 04: 타이타닉 빙산 보스전 (실시간 레이저 함포전)
+    // ========================================================
+    // CASE 04: [실전 검증 & 결전] 봉인 시험지 채점 ➔ 데이터 기반 빙산 함포전
+    // ========================================================
+    let testScored = false;
     let bossHp = 1000;
     let dialSex = 'female';
     let dialCabin = 1;
     let dialAge = 10;
 
-    function getOutputPower() {
-      let p = 32;
-      if (dialSex === 'female') p += 43;
-      else p -= 18;
-      if (dialCabin === 1) p += 23;
-      else if (dialCabin === 3) p -= 16;
-      if (dialAge === 10) p += 16;
-      else if (dialAge === 60) p -= 12;
-      return Math.max(10, Math.min(98, p));
+    function getProbabilityAndReason() {
+      let prob = 0.5;
+      let reason = '';
+      if (dialSex === 'female') {
+        if (dialCabin === 1) {
+          prob = dialAge === 10 ? 99.1 : dialAge === 28 ? 90.6 : 88.3;
+          reason = '여성 + 1등실(상층 갑판 보트 탑승) ➔ 의사결정나무 최고 생존 확률!';
+        } else if (dialCabin === 2) {
+          prob = dialAge === 10 ? 97.2 : dialAge === 28 ? 74.6 : 62.2;
+          reason = '여성 + 2등실 ➔ 여성 우선 구조 철칙 적용!';
+        } else {
+          prob = dialAge === 10 ? 97.3 : dialAge === 28 ? 92.7 : 56.6;
+          reason = '여성 + 3등실 ➔ 여성 우선 구조이나 3등실 구획 지연';
+        }
+      } else {
+        if (dialCabin === 1) {
+          prob = dialAge === 10 ? 37.0 : dialAge === 28 ? 61.8 : 28.7;
+          reason = dialAge === 10 ? '어린이 우선 구조 적용' : '1등실 성인 남성 (선박 잔류 원칙으로 생존율 제한)';
+        } else if (dialCabin === 2) {
+          prob = dialAge === 10 ? 10.9 : dialAge === 28 ? 10.2 : 6.1;
+          reason = '2등실 성인 남성 ➔ 보트 탑승 순위 최후순위 (낮은 생존율)';
+        } else {
+          prob = dialAge === 10 ? 37.0 : dialAge === 28 ? 25.1 : 0.7;
+          reason = dialAge === 60 ? '3등실 노인 남성 ➔ 탈출 불가능 최저 생존율' : '3등실 남성 ➔ 하층부 격리로 인한 최저 생존율';
+        }
+      }
+      return { prob: prob.toFixed(1), reason };
     }
 
     function getDmg() {
-      const p = getOutputPower();
-      if (p >= 80) return 250;
-      if (p >= 50) return 150;
-      return 60;
+      const { prob } = getProbabilityAndReason();
+      const p = parseFloat(prob);
+      if (p >= 85) return 250;
+      if (p >= 60) return 160;
+      if (p >= 30) return 80;
+      return 25;
     }
 
     mount.innerHTML = `
       <div class="arcade-board">
         <div class="arcade-header">
-          <h2 class="arcade-title"><span>🚢</span> FINAL BOSS: 빙산 괴수 vs 타이타닉 AI 예측 함포</h2>
+          <h2 class="arcade-title"><span>🎯</span> CASE 04: 실전 시험 채점 & 타이타닉 빙산 결전</h2>
           <div class="arcade-hud-row">
-            <span class="arcade-score-pill" style="color:#ff6b81;">BOSS BATTLE</span>
-            <span class="arcade-score-pill" id="boss-score-pill">HP: 1,000 / 1,000</span>
+            <span class="arcade-score-pill" id="stage4-phase-pill">1단계: 시험지 채점</span>
+            <span class="arcade-score-pill" style="color:#ff6b81;">FINAL CLIMAX</span>
           </div>
         </div>
-        
-        <div class="boss-battle-arena">
+
+        <div id="test-eval-phase" style="background:#132032; border:1px solid #4a6788; border-radius:6px; padding:12px; margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong style="color:#ffd32a; font-size:13px;">1단계: 20% 봉인 시험지(72명의 낯선 승객) 채점하기</strong>
+            <span style="font-size:11px; color:#8faac4;">AI가 한 번도 보지 못한 실제 승객 기록</span>
+          </div>
+          <p style="font-size:12px; color:#cddce8; margin:0 0 10px 0;">
+            AI가 훈련 때 엿보지 않은 72명의 비밀 승객에게 의사결정나무 규칙을 적용해 생존 여부를 예측하고 실제 정답과 대조합니다!
+          </p>
+          <div class="eval-matrix-box" id="eval-matrix-slot" style="display:none;">
+            <div class="eval-stat-tile">
+              <strong>66.7% (48명)</strong>
+              <span>72명 중 적중한 승객 수 (정확도 Accuracy)</span>
+            </div>
+            <div class="eval-stat-tile">
+              <strong style="color:#ffd32a;">25명 / 23명</strong>
+              <span>실제 생존 적중(TP) / 실제 사망 적중(TN)</span>
+            </div>
+          </div>
+          <button class="primary" id="btn-score-test" style="width:100%; padding:10px; font-weight:800; background:#243b54;">
+            🔓 20% 봉인 시험지 자물쇠 해제 및 AI 채점 시작!
+          </button>
+        </div>
+
+        <div id="boss-battle-phase" style="display:none;" class="boss-battle-arena">
           <div class="boss-hud-top">
             <div class="boss-header-row">
               <span class="boss-name-title" id="boss-name-label">🧊 거대 빙산 괴수 (TITANIC APOCALYPSE ICEBERG)</span>
@@ -897,52 +1073,82 @@ function renderTitanicCaseBoard(mount) {
 
           <div class="cannon-dials-grid">
             <div class="cannon-dial-col">
-              <label>성별 모듈</label>
+              <label>1. 성별 규칙 모듈</label>
               <div class="dial-btns-row">
-                <button class="dial-btn selected" id="c-sex-f">여성 👸 (+43%)</button>
-                <button class="dial-btn" id="c-sex-m">남성 🤵 (-18%)</button>
+                <button class="dial-btn selected" id="c-sex-f">여성 👸 (규칙1: 76.7%)</button>
+                <button class="dial-btn" id="c-sex-m">남성 🤵</button>
               </div>
             </div>
             <div class="cannon-dial-col">
-              <label>객실 등급 모듈</label>
+              <label>2. 객실 규칙 모듈</label>
               <div class="dial-btns-row">
-                <button class="dial-btn selected" id="c-cab-1">1등실 👑 (+23%)</button>
+                <button class="dial-btn selected" id="c-cab-1">1등실 👑 (규칙2: 66.7%)</button>
                 <button class="dial-btn" id="c-cab-2">2등실 💼</button>
-                <button class="dial-btn" id="c-cab-3">3등실 🎒 (-16%)</button>
+                <button class="dial-btn" id="c-cab-3">3등실 🎒</button>
               </div>
             </div>
             <div class="cannon-dial-col">
-              <label>나이 모듈</label>
+              <label>3. 나이 규칙 모듈</label>
               <div class="dial-btns-row">
-                <button class="dial-btn selected" id="c-age-10">아이 👶 (+16%)</button>
+                <button class="dial-btn selected" id="c-age-10">아이 👶 (규칙3: 70.5%)</button>
                 <button class="dial-btn" id="c-age-28">청년 🧑</button>
-                <button class="dial-btn" id="c-age-60">노인 🧓 (-12%)</button>
+                <button class="dial-btn" id="c-age-60">노인 🧓</button>
               </div>
             </div>
           </div>
 
           <div class="cannon-core-indicator">
-            <span style="font-size:12px; color:#cbdce8;">함포 충전 출력: <strong id="cannon-power-text" style="color:#5effd8; font-size:14px;">98% [HYPER OVERDRIVE!]</strong></span>
-            <span style="font-size:12px; color:#ffd32a;">발사당 위력: <strong id="cannon-dmg-text" style="font-size:14px;">250 DMG</strong></span>
+            <span style="font-size:12px; color:#cbdce8;">AI 예측 생존 확률: <strong id="cannon-power-text" style="color:#5effd8; font-size:14px;">99.1% [초임계 출력!]</strong></span>
+            <span style="font-size:12px; color:#ffd32a;">타격 위력: <strong id="cannon-dmg-text" style="font-size:14px;">250 DMG</strong></span>
+          </div>
+
+          <div class="cannon-proof-tag" id="cannon-proof-reason">
+            📊 <strong>데이터 증명 근거:</strong> 여성 + 1등실(상층 갑판 보트 탑승) ➔ 최고 생존 확률!
           </div>
 
           <button class="cannon-fire-action-btn" id="cannon-fire-btn">🔥 플라즈마 함포 발사! (CLICK TO SHOOT! 연타 가능!)</button>
         </div>
+
         <div id="boss-clear-slot"></div>
       </div>`;
 
-    setDialogue([['lumi', '생존율이 높은 조건을 세팅하고 함포 버튼을 마구 연타해서 빙산을 박살내줘!']], () => {}, '발사!');
+    setDialogue([['lumi', '먼저 20% 봉인 시험지를 열어 AI의 진짜 실력을 채점해봐!']], () => {}, '채점하기!');
+
+    $('#btn-score-test').onclick = () => {
+      if (testScored) return;
+      testScored = true;
+      playSfx('lock');
+      setTimeout(() => playSfx('victory'), 250);
+      triggerScreenShake();
+
+      $('#eval-matrix-slot').style.display = 'grid';
+      $('#btn-score-test').style.display = 'none';
+      $('#stage4-phase-pill').textContent = '2단계: 빙산 결전';
+
+      $('#boss-battle-phase').style.display = 'flex';
+      triggerFloatingToast('🎯 시험 채점 완료: 정확도 66.7%! 실전 검증 성공!', '🏆');
+
+      setDialogue([['lumi', '검증 완료! 우리가 데이터에서 찾아낸 최고 확률 조건을 세팅하고 빙산을 격파해!']], () => {}, '전투 개시!');
+      updateDials();
+    };
 
     function updateDials() {
-      const p = getOutputPower();
+      const { prob, reason } = getProbabilityAndReason();
       const dmg = getDmg();
+      const p = parseFloat(prob);
+
       const txt = $('#cannon-power-text');
       const dmgTxt = $('#cannon-dmg-text');
+      const reasonEl = $('#cannon-proof-reason');
+
       if (txt) {
-        txt.textContent = `${p}% [${p >= 80 ? '🔥 HYPER CRITICAL OVERDRIVE!' : p >= 50 ? '정상 출력' : '⚠️ 출력 부족'}]`;
-        txt.style.color = p >= 80 ? '#ff6b81' : p >= 50 ? '#5effd8' : '#ffd32a';
+        txt.textContent = `${prob}% [${p >= 80 ? '🔥 HYPER OVERDRIVE!' : p >= 50 ? '정상 출력' : '⚠️ 출력 부족'}]`;
+        txt.style.color = p >= 80 ? '#5effd8' : p >= 50 ? '#ffd32a' : '#ff6b81';
       }
       if (dmgTxt) dmgTxt.textContent = `${dmg} DMG`;
+      if (reasonEl) {
+        reasonEl.innerHTML = `📊 <strong>데이터 증명 근거:</strong> ${reason}`;
+      }
     }
 
     $('#c-sex-f').onclick = () => {
@@ -1008,8 +1214,6 @@ function renderTitanicCaseBoard(mount) {
       updateDials();
     };
 
-    updateDials();
-
     const fireBtn = $('#cannon-fire-btn');
     fireBtn.onclick = () => {
       if (bossHp <= 0) return;
@@ -1040,8 +1244,6 @@ function renderTitanicCaseBoard(mount) {
       if (bar) bar.style.width = (bossHp / 10) + '%';
       const text = $('#boss-hp-text');
       if (text) text.textContent = `${bossHp} / 1,000 HP`;
-      const pill = $('#boss-score-pill');
-      if (pill) pill.textContent = `HP: ${bossHp} / 1,000`;
 
       if (bossHp <= 0) {
         playSfx('cannon');
@@ -1059,13 +1261,16 @@ function renderTitanicCaseBoard(mount) {
 
         $('#boss-clear-slot').innerHTML = `
           <div class="arcade-clear-card" style="border-color:#ffd32a; box-shadow:0 0 30px rgba(255,211,42,0.4);">
-            <div class="clear-title" style="color:#ffd32a; font-size:16px;">🏆 MISSION ACCOMPLISHED! 타이타닉 구출 및 전설의 데이터 탐정 등극!</div>
-            <p class="clear-insight">
-              💡 <b>AI가 밝혀낸 실제 역사의 진실:</b><br>
-              당시 빙산 충돌 시 승객 생존을 결정지은 핵심 규칙은 바로 <b>'여성과 아이 우선 구조 원칙'</b>과 <b>'상층 1등실의 구명보트 접근성'</b>이었습니다!<br>
-              기록의 빈칸을 채우고, 0과 1로 번역하고, 공정하게 훈련시킨 AI 모델이 이 숨겨진 생존 규칙을 완벽하게 찾아내어 98% 초임계 광선포로 빙산을 파괴했습니다!
-            </p>
-            <button class="primary clear-next-btn" id="finish-titanic-btn" style="background:linear-gradient(90deg, #ffd32a, #ff9f43); color:#111;">🏆 탐정 보고서 완성 및 모험 지도 복귀 ▶</button>
+            <div class="clear-title" style="color:#ffd32a; font-size:16px;">🏆 MISSION COMPLETE! 타이타닉 데이터 수사 종결 리포트</div>
+            <div class="clear-insight" style="line-height:1.8;">
+              <strong>🔍 사건의 전모와 데이터 과학의 인과관계 총정리:</strong><br>
+              1. <b>데이터 탐색(EDA)</b>: 전체 승객 조사에서 여성(76.7%)과 1등실(66.7%)의 생존율이 압도적임을 발견함.<br>
+              2. <b>결측치 & 인코딩</b>: 48명의 나이를 지우지 않고 평균(39.4세)으로 채워 데이터를 보존하고, 글자를 0과 1 숫자로 번역함.<br>
+              3. <b>과적합 방지 & 학습</b>: 80% 문제집으로 훈련시켜 [여성 우선 ➔ 1등실·어린이 우선]이라는 AI 의사결정나무를 정립함.<br>
+              4. <b>실전 검증 & 승리</b>: 봉인된 72명의 시험지에서 정확도 66.7%를 입증하고, 입증된 최고 확률 빔으로 빙산을 격파함!<br>
+              <i>"정답은 우연히 나타난 것이 아니라, 데이터 속에 숨겨진 역사적 진실과 논리적 인과관계의 결실이었습니다!"</i>
+            </div>
+            <button class="primary clear-next-btn" id="finish-titanic-btn" style="background:linear-gradient(90deg, #ffd32a, #ff9f43); color:#111;">🏆 전설의 데이터 탐정 배지 수령 & 모험 지도 복귀 ▶</button>
           </div>`;
 
         $('#finish-titanic-btn').onclick = () => {
@@ -1075,7 +1280,7 @@ function renderTitanicCaseBoard(mount) {
           map();
         };
 
-        setDialogue([['lumi', '빙산 괴수 대격파! 너는 이제 전설의 데이터 사이언티스트 탐정이야!']], () => {}, '최고예요!');
+        setDialogue([['lumi', '완벽한 논리와 추리로 사건을 해결했어! 너는 이제 진정한 데이터 과학자야!']], () => {}, '수사 완료!');
       }
     };
   }
