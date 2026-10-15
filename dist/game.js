@@ -25,7 +25,7 @@ const stageEnvironments = [
 ];
 
 const questScenes = [
-  { image: 'assets/titanic-lumi.png', place: '타이타닉 · 별빛 갑판', chapter: '별빛 아래 남겨진 명단', npc: '기록관 레오', icon: '◈', color: '#f3cc87', item: '승객 명단', desc: '별빛이 내려앉은 갑판. 낡은 명단 속 작은 빈칸에서 탐정의 첫 이야기가 시작됩니다.', intro: [['lumi', '안녕! 나는 여우 탐정 루미. 승객 명단을 찾았어! 누가 배에 탔는지 5명만 먼저 펼쳐보자!']] },
+  { image: 'assets/titanic-lumi.png', place: '타이타닉 · 별빛 갑판', chapter: '별빛 아래 남겨진 명단', npc: '기록관 레오', icon: '◈', color: '#f3cc87', item: '승객 명단', desc: '별빛이 내려앉은 갑판. 낡은 명단 속 작은 빈칸에서 탐정의 첫 이야기가 시작됩니다.', intro: [['lumi', '안녕! 나는 여우 탐정 루미. 승객 명단을 찾았어! 화면 속 탐정을 직접 움직여 명단으로 가보자!']] },
   { image: 'assets/store-lumi.png', place: '백화점 · 불 켜진 안내 데스크', chapter: '다음 VIP를 찾아서', npc: '매니저 유나', icon: '◇', color: '#d6b2ed', item: '고객 수첩', desc: '문을 닫은 백화점에 도착한 작은 의뢰. 손님들이 남긴 기록에서 다음 VIP의 단서를 찾아요.', intro: [['lumi', '안녕! 고객 수첩을 발견했어. 누가 얼마나 자주 방문했는지 발자취를 읽어보자!']] },
   { image: 'assets/city-lumi.png', place: '도시 · 야간 모빌리티 차고', chapter: '도착 시간을 부탁해', npc: '엔지니어 준', icon: '⌖', color: '#91d4dd', item: '이동 일지', desc: '비 내리는 도시, 늦은 밤의 차고. 지난 이동 기록을 단서 삼아 목적지까지 걸리는 시간을 알아봐요.', intro: [['lumi', '안녕! 심야 이동 일지를 찾았어. 지난번 얼마나 멀리 달렸는지 일지부터 펼쳐보자!']] }
 ];
@@ -182,7 +182,7 @@ function drawDialogueControls() {
   };
   if ($('#dialogue-help')) {
     $('#dialogue-help').onclick = () => {
-      if (!busy) setDialogue([['lumi', '버튼 하나만 누르면 내가 옆에서 다 도와줄 테니 걱정 마!']], state.onDone, state.label);
+      if (!busy) setDialogue([['lumi', '화면을 클릭하거나 방향키로 탐정을 움직여봐! 내가 옆에서 도와줄게.']], state.onDone, state.label);
     };
   }
 }
@@ -267,6 +267,9 @@ function triggerStageTransition(targetStage, onComplete) {
 
   playChime(true);
   applyStageEnvironment(env);
+  if (window.RPG && typeof window.RPG.switchRoom === 'function' && window.RPG.currentRoom !== targetStage) {
+    window.RPG.switchRoom(targetStage, 180, 260);
+  }
 
   const overlay = document.createElement('div');
   overlay.className = 'stage-cutscene-overlay';
@@ -426,6 +429,14 @@ function mountStoryScene() {
   $('#scene-item').onclick = () => { if (!busy) unlockWorkbench(true); };
   refreshSceneActions();
 
+  // Initialize RPG Movement & Exploration
+  if (window.RPG && typeof window.RPG.init === 'function') {
+    window.RPG.init($('.game-scene'));
+    if (window.RPG.currentRoom !== stage) {
+      window.RPG.switchRoom(stage, 180, 260);
+    }
+  }
+
   if (!briefingSeen[current]) {
     showBriefing();
   } else {
@@ -508,7 +519,7 @@ function startStageStory(replay) {
   closeSceneWindow();
   const seen = storySeen[current][stage] || results[current][stage];
   if (seen && !replay) {
-    setDialogue([['lumi', results[current][stage] ? '발견한 내용을 수첩에 정리해뒀어. 함께 살펴보자!' : '준비되면 수첩을 열어봐. 한 번에 하나씩 해보자!']], () => unlockWorkbench(false), '수첩 펼치기 →');
+    setDialogue([['lumi', results[current][stage] ? '발견한 내용을 수첩에 정리해뒀어. 함께 살펴보자!' : '탐정을 움직여 주변을 조사하거나 수첩을 열어봐!']], () => unlockWorkbench(false), '수첩 펼치기 →');
     return;
   }
   setDialogue(stageLines(), () => unlockWorkbench(true), stage === 0 ? '좋아요, 확인해볼게요 →' : '좋아요, 시작해요 →');
